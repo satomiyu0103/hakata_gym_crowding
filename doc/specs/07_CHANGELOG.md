@@ -10,7 +10,12 @@
 
 ## [Unreleased]
 
+### Added
+- `FR-FETCH-002` 天気取得 — トレーニング室ページ HTML から天気・最高/最低気温・風速・風向・降水確率を取得
+- `FR-STORE-002` 列スキーマ拡張 — 混雑履歴を日本語16列に変更（取得時間＋計測時間）、旧6列移行スクリプト
+
 ### Fixed
+- `FR-STORE-002` 列移行 — 旧行の日時・人数・ステータス不正時に行単位でスキップし移行全体を継続
 - `FR-SCHED-001` ScheduleGuard — 振替火曜を yesterday 基準に変更、`_third_monday` に月境界ガード
 - `FR-FETCH-001` PCounterFetcher — naive datetime を Asia/Tokyo として stale 判定
 - `FR-STORE-001` SheetsWriter — `gspread.Worksheet.update` の引数順を修正（`values` 先行）

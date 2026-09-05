@@ -119,8 +119,9 @@ class PCounterFetcher:
             return True
 
         local_now = now
-        if now.tzinfo is not None:
-            local_now = now.astimezone(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
+        if now.tzinfo is None:
+            local_now = now.replace(tzinfo=ZoneInfo("Asia/Tokyo"))
+        local_now = local_now.astimezone(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
 
         source_dt = local_now.replace(
             hour=hour,

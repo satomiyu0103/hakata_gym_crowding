@@ -1,8 +1,20 @@
-"""スプレッドシート行の組立（日付分割・曜日・備考）。純関数のみ。"""
+"""スプレッドシート行の組立（日付分割・曜日・備考）。純関数のみ。
+
+含まれるもの:
+- build_crowding_record — Snapshot + Weather → CrowdingRecord
+- record_to_row — CrowdingRecord → 16列の値リスト
+- convert_legacy_row — 旧6列から新16列へ変換（移行用）
+
+処理の流れ:
+1. スナップショットと天気から備考（stale・天気失敗）を組み立てる
+2. 日付・曜日・時刻を分割して CrowdingRecord を作る
+3. シート追記用に list へ変換する
+"""
 
 from __future__ import annotations
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from hakata_gym_crowding.domain.models import (
     CrowdingRecord,
@@ -13,6 +25,7 @@ from hakata_gym_crowding.domain.models import (
 
 WEEKDAY_LABELS = ("月", "火", "水", "木", "金", "土", "日")
 LEGACY_RECORDED_AT_FORMAT = "%Y-%m-%d %H:%M:%S"
+_LOCAL_TZ = ZoneInfo("Asia/Tokyo")
 
 
 class LegacyRowParseError(ValueError):
@@ -106,7 +119,9 @@ def _parse_legacy_snapshot(row: list[str]) -> CrowdingSnapshot:
         raise LegacyRowParseError("recorded_at が空です")
     # 日時は旧スキーマの固定形式のみ受け付ける
     try:
-        recorded_at = datetime.strptime(recorded_at_text, LEGACY_RECORDED_AT_FORMAT)
+        recorded_at = datetime.strptime(
+            recorded_at_text, LEGACY_RECORDED_AT_FORMAT
+        ).replace(tzinfo=_LOCAL_TZ)
     except ValueError:
         raise LegacyRowParseError(
             "recorded_at の形式が不正です"
@@ -155,7 +170,7 @@ def _parse_legacy_snapshot(row: list[str]) -> CrowdingSnapshot:
     )
 
 
-def convert_legacy_row(row: list[str]) -> list[str | int | None]:
+def convert_legacy_row(row: list[str]) -> list[str | int]:
     """旧6列（英語ヘッダー）の1行を新16列の値リストに変換する。"""
     snapshot = _parse_legacy_snapshot(row)
     record = build_crowding_record(snapshot, None)

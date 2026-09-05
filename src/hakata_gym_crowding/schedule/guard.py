@@ -1,4 +1,8 @@
-"""開館時間・休館日の判定。"""
+"""開館時間・休館日の判定。
+
+博多体育館トレーニング室の公式休館ルール（MVP）に従い、
+定期実行すべきかどうかを返す。
+"""
 
 from __future__ import annotations
 
@@ -40,6 +44,7 @@ class ScheduleGuard:
             now = now.astimezone(self._tz)
 
         current_time = now.time()
+        # 9:00 より前、または 22:00 以降は取得しない
         if current_time < self.OPEN_TIME or current_time >= self.CLOSE_TIME:
             return ScheduleDecision(False, SkipReason.OUTSIDE_HOURS)
 
@@ -51,6 +56,7 @@ class ScheduleGuard:
         if today == third_monday:
             return ScheduleDecision(False, SkipReason.THIRD_MONDAY)
 
+        # 第3月曜が祝日のとき、振替休館は翌火曜
         yesterday = today - timedelta(days=1)
         third_monday_of_yesterday = self._third_monday(yesterday.year, yesterday.month)
         if (

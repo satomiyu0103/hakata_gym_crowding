@@ -1,4 +1,10 @@
-"""ピープルカウンター JSON の取得とパース。"""
+"""ピープルカウンター JSON の取得とパース。
+
+処理の流れ:
+1. トレーニング室・体育館の JSON をそれぞれ GET する
+2. 人数・計測時刻・メンテナンスフラグを取り出す
+3. 計測が古い場合は stale_data、メンテ中は maintenance と判定する
+"""
 
 from __future__ import annotations
 
@@ -45,6 +51,7 @@ class PCounterFetcher:
         )
 
     def close(self) -> None:
+        # 自前で作った Client だけ閉じる（テスト用の注入 Client は触らない）
         if self._owns_client:
             self._client.close()
 
@@ -60,8 +67,10 @@ class PCounterFetcher:
         gym = self._fetch_payload(GYM_JSON_URL, section="gym")
 
         status = RecordStatus.OK
+        # メンテナンス中はサイト表示が止まっているため最優先で判定
         if train.maintenance or gym.maintenance:
             status = RecordStatus.MAINTENANCE
+        # 計測時刻が5分以上古い場合は stale（記録は行う）
         elif self._is_stale(now, train.time_calc) or self._is_stale(now, gym.time_calc):
             status = RecordStatus.STALE_DATA
 
@@ -105,6 +114,7 @@ class PCounterFetcher:
                 return payload
             except (httpx.HTTPError, ValueError, TypeError) as exc:
                 last_error = exc
+                # 指数バックオフ: 1秒 → 2秒 → 4秒
                 if attempt < MAX_RETRIES - 1:
                     time.sleep(2**attempt)
         msg = f"JSON 取得に失敗しました: {url}"
@@ -120,6 +130,7 @@ class PCounterFetcher:
 
         local_now = now
         if now.tzinfo is None:
+            # naive datetime は JST として扱う（Windows ローカル実行向け）
             local_now = now.replace(tzinfo=ZoneInfo("Asia/Tokyo"))
         local_now = local_now.astimezone(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
 
@@ -130,8 +141,8 @@ class PCounterFetcher:
             microsecond=0,
         )
         delta = abs((local_now - source_dt).total_seconds())
+        # 日付跨ぎで誤判定しないよう ±12時間超なら日付を補正
         if delta > 12 * 3600:
-            # 日付跨ぎの誤差を補正する
             if source_dt > local_now:
                 source_dt -= timedelta(days=1)
             else:

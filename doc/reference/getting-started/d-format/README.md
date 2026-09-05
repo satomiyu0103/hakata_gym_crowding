@@ -1,37 +1,22 @@
-# D形式コード解説
+# D形式解説 一覧
 
-処理の流れを **D形式**（日本語変数＋Python 制御構文＋行コメント）で追うための学習用ドキュメントです。
+博多混雑 RPA のソースコードを、日本語変数と行コメントで読み解くための解説集。
 
-[コード解説.md](../コード解説.md) がファイル単位の責務・設計意図を扱うのに対し、ここでは **やりたいこと** や **処理の順番** を読みやすく残します。
+読み方の手順: [読み方.md](../読み方.md)
 
-作成手順: [.cursor/skills/d-format-code-guide/SKILL.md](../../../../.cursor/skills/d-format-code-guide/SKILL.md)
+| ファイル | D形式解説 | 実装パス |
+|---|---|---|
+| CLI メイン処理 | [cli-main-flow.md](cli-main-flow.md) | `src/hakata_gym_crowding/cli.py` |
+| 設定読込 | [config-settings.md](config-settings.md) | `src/hakata_gym_crowding/config.py` |
+| 開館・休館判定 | [schedule-guard.md](schedule-guard.md) | `src/hakata_gym_crowding/schedule/guard.py` |
+| 混雑 JSON 取得 | [fetch-pcounter.md](fetch-pcounter.md) | `src/hakata_gym_crowding/fetch/pcounter.py` |
+| 天気 HTML 取得 | [fetch-training-page.md](fetch-training-page.md) | `src/hakata_gym_crowding/fetch/training_page.py` |
+| スプレッドシート追記 | [store-sheets.md](store-sheets.md) | `src/hakata_gym_crowding/store/sheets.py` |
+| Slack 通知 | [notify-slack.md](notify-slack.md) | `src/hakata_gym_crowding/notify/slack.py` |
+| 通知パッケージ | [notify-init.md](notify-init.md) | `src/hakata_gym_crowding/notify/__init__.py` |
+| レコード組立 | [domain-record-format.md](domain-record-format.md) | `src/hakata_gym_crowding/domain/record_format.py` |
+| ドメインモデル | [domain-models.md](domain-models.md) | `src/hakata_gym_crowding/domain/models.py` |
+| 混雑ラベル | [domain-crowding.md](domain-crowding.md) | `src/hakata_gym_crowding/domain/crowding.py` |
+| 実行ログ | [logging-utils.md](logging-utils.md) | `src/hakata_gym_crowding/logging_utils.py` |
 
-## D形式とは
-
-| 要素 | 内容 |
-|---|---|
-| 変数・処理名 | 日本語（例: `数字`, `十倍した値`） |
-| 制御構文 | Python のまま（`for`, `if` 等） |
-| 英語 API | `range`, `print` 等。各ファイルの「用語」で定義 |
-| 行コメント | 各行の意図を日本語で補足 |
-
-D形式は **学習用** です。
-`src/` `tests/` の実装は [.cursor/rules/naming_conventions.mdc](../../../../.cursor/rules/naming_conventions.mdc) に従い、平易な英語の識別子を使います。
-
-## ファイル一覧
-
-| トピック | モード | 対象 | ファイル |
-|---|---|---|---|
-| 0〜9 を 10 倍して表示 | intent | ループ入門 | [loop-multiply-by-ten.md](loop-multiply-by-ten.md) |
-
-## 依頼のしかた
-
-チャットで次のように伝えると、エージェントが本ディレクトリに解説ファイルを追加します。
-
-**やりたいことを整理したいとき**
-
-> CSV を読んで合計金額を出したい。D形式で解説ファイルを作って。
-
-**既存コードを理解したいとき**
-
-> `src/.../main.py` のこの処理を教えて。わかりやすく D形式でファイルに残して。
+作成手順: [d-format-code-guide](../../../../.cursor/skills/d-format-code-guide/SKILL.md)

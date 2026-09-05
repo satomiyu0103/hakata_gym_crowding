@@ -16,6 +16,7 @@
 - `FR-LOG-002` 障害 Slack 通知 — ERROR 時（設定・混雑取得・Sheets 書込）に Incoming Webhook へ送信、15 分重複抑制
 
 ### Changed
+- `docs` ジュニア向けコメント三層モデル（L1/L2/L3）— 全12 `src/` モジュールに処理の流れ・分岐・例外コメント整備、`junior_code_reading` Rule・`junior-code-reading` Skill、D形式解説12本（`doc/reference/getting-started/d-format/`）、`読み方.md`・`コード解説.md` 索引
 - `docs` Phase 2.0 残タスク — `08_検証設計.md` 実データ化、`src/README.md` 拡充、全 `src/` にジュニア向けブロックコメント
 
 ### Fixed

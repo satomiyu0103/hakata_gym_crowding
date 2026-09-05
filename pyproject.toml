@@ -12,6 +12,7 @@ dependencies = [
     "playwright>=1.62.0",
     "python-dotenv>=1.1.1",
     "tzdata>=2025.2",
+    "ruff>=0.16.6",
 ]
 
 [project.scripts]

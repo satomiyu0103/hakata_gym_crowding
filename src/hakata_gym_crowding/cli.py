@@ -1,11 +1,17 @@
-"""CLI エントリポイント。
+"""CLI エントリポイント — 定期実行の司令塔。
+
+含まれるもの:
+- build_parser — コマンドライン引数の定義
+- main — 取得から Sheets 追記までの一連処理
 
 処理の流れ:
-1. 設定（.env）を読み込む
-2. 開館時間・休館日を判定する（--force でスキップ可）
-3. p-counter JSON から混雑データを取得する
-4. トレーニング室ページから天気を取得する（失敗時は混雑のみ継続）
-5. Google スプレッドシートへ 16 列で追記する（--dry-run 時は表示のみ）
+1. 設定読込（.env）— 失敗時は stderr + Slack 通知可なら送り、終了(1)
+2. 開館時間・休館日判定（--force でスキップ可）— 対象外ならログして終了(0)
+3. p-counter JSON から混雑データ取得 — 失敗時はログ + Slack 通知、終了(1)
+4. トレーニング室ページから天気取得 — 失敗しても混雑のみ継続
+5. Google スプレッドシートへ 16 列で追記（--dry-run 時は表示のみ、終了(0)）
+6. メンテナンス中は Sheets へ書かず終了(0)
+7. Sheets 追記 — 失敗時はログ + Slack 通知、終了(1)
 """
 
 from __future__ import annotations
@@ -28,6 +34,15 @@ from hakata_gym_crowding.store.sheets import SheetsWriter
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """コマンドライン引数を定義する。
+
+    受け取る: なし
+    返す: --dry-run / --force を受け付ける ArgumentParser
+
+    処理の流れ:
+    1. 説明文付きパーサーを作成
+    2. dry-run（Sheets 書かない）と force（開館判定スキップ）を追加
+    """
     parser = argparse.ArgumentParser(
         description="博多体育館トレーニング室の混雑状況を取得しスプレッドシートへ追記する。",
     )
@@ -45,17 +60,34 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """定期実行のメイン処理。
+
+    受け取る: コマンドライン引数（省略時は sys.argv）
+    返す: 終了コード（0=正常終了 or 開館外スキップ, 1=エラー）
+
+    処理の流れ:
+    1. 設定読込（失敗→通知して 1）
+    2. 開館判定（対象外→ログして 0）
+    3. 混雑 JSON 取得（失敗→通知して 1）
+    4. 天気取得（失敗しても混雑は続行）
+    5. dry-run なら表示のみ 0
+    6. メンテ中なら Sheets 書かず 0
+    7. Sheets 追記（失敗→通知して 1）
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
 
     default_tz = ZoneInfo("Asia/Tokyo")
     run_id = datetime.now(tz=default_tz).strftime("%Y%m%d-%H%M%S") + f"-{uuid4().hex[:4]}"
 
+    # [手順1] 設定読込
+    # ・成功 → 開館判定へ
+    # ・ValueError → stderr に表示、Slack 通知可なら送り、終了(1)
     try:
         settings = load_settings(require_sheets=not args.dry_run)
     except ValueError as exc:
-        # .env 未設定など設定エラーは stderr に出して終了
         print(exc, file=sys.stderr)
+        # 通知用に Sheets 不要の設定読込を試す（こちらも失敗なら通知しない）
         try:
             notify_settings = load_settings(require_sheets=False)
         except ValueError:
@@ -68,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
     now = datetime.now(tz=tz)
     guard = ScheduleGuard(timezone=settings.timezone)
 
-    # 開館時間外・休館日なら取得せず終了する（--force のときは続行）
+    # [手順2] 開館時間外・休館日なら取得せず正常終了(0)（--force のときはスキップ）
     if not args.force:
         decision = guard.evaluate(now)
         if not decision.should_run:
@@ -77,17 +109,21 @@ def main(argv: list[str] | None = None) -> int:
             print(message)
             return 0
 
+    # [手順3] 混雑 JSON 取得
+    # ・成功 → 天気取得へ
+    # ・RuntimeError → ログ + Slack 通知、終了(1)
     try:
         with PCounterFetcher() as fetcher:
             snapshot = fetcher.fetch_snapshot(now)
     except RuntimeError as exc:
-        # JSON 取得失敗はログに残して終了コード 1
         append_log(settings.log_file, f"error fetch={exc}")
         notify_error(settings, run_id=run_id, stage="fetch", exc=exc)
         print(exc, file=sys.stderr)
         return 1
 
-    # 天気取得失敗は混雑データの保存を止めない
+    # [手順4] 天気取得（失敗しても混雑データの保存は止めない）
+    # ・成功 → weather に値が入る
+    # ・RuntimeError → ログに warn のみ、weather_fetch_failed=True で続行
     weather_fetch_failed = False
     weather = None
     try:
@@ -115,15 +151,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     print(line)
 
+    # dry-run なら表示のみで終了(0)
     if args.dry_run:
         append_log(settings.log_file, f"dry_run {line}")
         return 0
 
-    # メンテナンス中はサイトが停止しているため Sheets へ書かない
+    # [手順6] メンテナンス中はサイトが停止しているため Sheets へ書かず終了(0)
     if snapshot.status == RecordStatus.MAINTENANCE:
         append_log(settings.log_file, f"maintenance {line}")
         return 0
 
+    # [手順7] Sheets 追記
+    # ・成功 → ログに ok を書き、終了(0)
+    # ・Exception → ログ + Slack 通知、終了(1)
     try:
         writer = SheetsWriter(
             spreadsheet_id=settings.spreadsheet_id,
@@ -132,7 +172,6 @@ def main(argv: list[str] | None = None) -> int:
         )
         writer.append_record(record)
     except Exception as exc:  # noqa: BLE001 - CLI 境界でログ化
-        # Sheets 書き込み失敗はログに残して終了コード 1
         append_log(settings.log_file, f"error sheets={exc}")
         notify_error(settings, run_id=run_id, stage="sheets", exc=exc)
         print(exc, file=sys.stderr)

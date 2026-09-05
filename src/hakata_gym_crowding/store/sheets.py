@@ -1,4 +1,15 @@
-"""Google スプレッドシートへの追記。"""
+"""Google スプレッドシートへの追記。
+
+含まれるもの:
+- SheetsWriter — 混雑履歴シートへ1行追記
+- HEADER / LEGACY_HEADER — 列定義
+
+処理の流れ:
+1. サービスアカウントでスプレッドシートに接続
+2. 指定シートを取得（無ければ作成してヘッダー行を書く）
+3. ヘッダーがずれていれば16列に修正
+4. 1行を append_row で追記 — 失敗時は例外を cli へ伝播
+"""
 
 from __future__ import annotations
 
@@ -60,7 +71,14 @@ HEADER_RANGE = f"A1:{_col_letter(len(HEADER))}1"
 
 
 class SheetsWriter:
-    """混雑履歴シートへ1行追記する。"""
+    """混雑履歴シートへ1行追記する。
+
+    集まっているもの:
+    - データ: spreadsheet_id, 認証ファイルパス, シート名
+    - 処理: append_record, append_snapshot
+
+    バリデーション: ヘッダー行の自動修正あり
+    """
 
     def __init__(
         self,
@@ -75,7 +93,12 @@ class SheetsWriter:
         self._worksheet: gspread.Worksheet | None = None
 
     def append_record(self, record: CrowdingRecord) -> None:
-        """組み立て済みレコードを1行追記する。"""
+        """組み立て済みレコードを1行追記する。
+
+        受け取る: CrowdingRecord（16列分の値）
+        返す: なし（副作用: シートに1行追加）
+        例外: gspread / 認証エラーはそのまま伝播
+        """
         worksheet = self._get_worksheet()
         worksheet.append_row(
             record_to_row(record),
@@ -88,7 +111,11 @@ class SheetsWriter:
         *,
         weather_fetch_failed: bool = False,
     ) -> None:
-        """スナップショットからレコードを組み立てて追記する（天気なしの簡易経路）。"""
+        """スナップショットからレコードを組み立てて追記する（天気なしの簡易経路）。
+
+        受け取る: 混雑スナップショット、天気失敗フラグ
+        返す: なし
+        """
         row = build_crowding_record(
             snapshot,
             None,
@@ -97,6 +124,12 @@ class SheetsWriter:
         self.append_record(row)
 
     def _get_worksheet(self) -> gspread.Worksheet:
+        """接続済み worksheet を返す（同一実行内はキャッシュ）。
+
+        受け取る: なし
+        返す: gspread Worksheet
+        例外: 認証・権限エラー
+        """
         # 同一実行内では worksheet を使い回す
         if self._worksheet is not None:
             return self._worksheet
@@ -107,10 +140,12 @@ class SheetsWriter:
         )
         client = gspread.authorize(credentials)
         spreadsheet = client.open_by_key(self._spreadsheet_id)
+        # シート取得
+        # ・成功 → worksheet を返す
+        # ・WorksheetNotFound → 新規シート作成 + ヘッダー行追加
         try:
             worksheet = spreadsheet.worksheet(self._sheet_name)
         except gspread.WorksheetNotFound:
-            # 初回はシートとヘッダー行を自動作成
             worksheet = spreadsheet.add_worksheet(
                 title=self._sheet_name,
                 rows=1000,

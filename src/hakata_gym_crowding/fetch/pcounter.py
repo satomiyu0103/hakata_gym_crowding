@@ -1,9 +1,12 @@
 """ピープルカウンター JSON の取得とパース。
 
+含まれるもの:
+- PCounterFetcher — 2 つの JSON を取得してスナップショットを組み立てる
+
 処理の流れ:
-1. トレーニング室・体育館の JSON をそれぞれ GET する
+1. トレーニング室・体育館の JSON をそれぞれ GET する — 失敗時は最大3回リトライ後 RuntimeError
 2. 人数・計測時刻・メンテナンスフラグを取り出す
-3. 計測が古い場合は stale_data、メンテ中は maintenance と判定する
+3. メンテ中なら maintenance、計測が5分以上古いなら stale_data と判定する
 """
 
 from __future__ import annotations
@@ -36,7 +39,14 @@ STALE_SECONDS = 60 * 5
 
 
 class PCounterFetcher:
-    """p-counter 公開 JSON を取得する。"""
+    """p-counter 公開 JSON（外部サービス）を取得する。
+
+    集まっているもの:
+    - データ: HTTP クライアント（自前生成 or テスト注入）
+    - 処理: fetch_snapshot（2 JSON → 1 スナップショット）
+
+    バリデーション: JSON ルートが dict でない場合は TypeError → リトライ対象
+    """
 
     def __init__(
         self,
@@ -62,7 +72,12 @@ class PCounterFetcher:
         self.close()
 
     def fetch_snapshot(self, now: datetime) -> CrowdingSnapshot:
-        """2 JSON を取得し、1 行分のスナップショットを組み立てる。"""
+        """2 JSON を取得し、1 行分のスナップショットを組み立てる。
+
+        受け取る: 取得時刻（タイムゾーン付き推奨）
+        返す: 混雑人数・ステータスを含む CrowdingSnapshot
+        例外: JSON 取得失敗時 RuntimeError
+        """
         train = self._fetch_payload(TRAIN_JSON_URL, section="train")
         gym = self._fetch_payload(GYM_JSON_URL, section="gym")
 
@@ -84,6 +99,7 @@ class PCounterFetcher:
         )
 
     def _fetch_payload(self, url: str, *, section: str) -> PCounterPayload:
+        """1 つの JSON から人数・閾値・メンテフラグを取り出す。"""
         data = self._get_json(url)
         node = data["hakata"][section]
         thresholds = node["threshold"]
@@ -103,9 +119,18 @@ class PCounterFetcher:
         )
 
     def _get_json(self, url: str) -> dict[str, Any]:
+        """URL から JSON を GET する。最大3回リトライ。
+
+        受け取る: 取得先 URL
+        返す: パース済み dict
+        例外: 3 回失敗で RuntimeError
+        """
         last_error: Exception | None = None
         # 最大3回まで JSON GET を試す
         for attempt in range(MAX_RETRIES):
+            # ・成功 → dict を返す
+            # ・HTTPError / ValueError / TypeError → 指数バックオフ後に再試行
+            # ・3回目も失敗 → RuntimeError を投げる
             try:
                 response = self._client.get(url)
                 response.raise_for_status()
@@ -125,7 +150,11 @@ class PCounterFetcher:
 
     @staticmethod
     def _is_stale(now: datetime, time_calc: str) -> bool:
-        """サイトJSと同じく、計測時刻が5分以上古い場合は stale とする。"""
+        """サイトJSと同じく、計測時刻が5分以上古い場合は stale とする。
+
+        受け取る: 現在時刻、計測時刻文字列（HH:MM:SS）
+        返す: True なら古いデータ
+        """
         try:
             hour, minute, second = (int(part) for part in time_calc.split(":"))
         except ValueError:

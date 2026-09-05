@@ -1,4 +1,15 @@
-"""実行設定の読み込み。"""
+"""実行設定の読み込み。
+
+含まれるもの:
+- Settings — 実行に必要な設定値のまとめ
+- load_settings — .env から Settings を組み立てる
+
+処理の流れ:
+1. config/.env を読み込む
+2. SPREADSHEET_ID 等を検証（dry-run 時は Sheets ID 不要）
+3. 相対パスをプロジェクトルート基準に解決
+4. Settings を返す — 必須欠損時 ValueError
+"""
 
 from __future__ import annotations
 
@@ -13,6 +24,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 @dataclass(frozen=True)
 class Settings:
+    """実行設定の値オブジェクト（変更不可）。"""
+
     spreadsheet_id: str
     google_credentials: Path
     timezone: str
@@ -24,7 +37,12 @@ class Settings:
 
 
 def load_settings(env_file: Path | None = None, *, require_sheets: bool = True) -> Settings:
-    """`.env` から設定を読み込む。"""
+    """`.env` から設定を読み込む。
+
+    受け取る: env ファイルパス（省略時 config/.env）、require_sheets（False なら SPREADSHEET_ID 不要）
+    返す: Settings
+    例外: SPREADSHEET_ID 未設定かつ require_sheets=True のとき ValueError
+    """
     # 呼び出し側がパスを渡さなければプロジェクト直下の config/.env を使う
     if env_file is None:
         env_file = PROJECT_ROOT / "config" / ".env"

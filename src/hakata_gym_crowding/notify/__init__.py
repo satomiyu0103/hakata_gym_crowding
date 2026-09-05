@@ -1,1 +1,1 @@
-"""障害通知（Slack Incoming Webhook 等）。"""
+"""障害通知パッケージ — Slack Incoming Webhook による ERROR 通知。"""

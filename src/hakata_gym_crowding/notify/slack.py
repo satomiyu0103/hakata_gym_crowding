@@ -1,4 +1,14 @@
-"""Slack Incoming Webhook による ERROR 通知。"""
+"""Slack Incoming Webhook による ERROR 通知。
+
+含まれるもの:
+- notify_error — 失敗時に Slack へメッセージ送信
+- STAGE_META — 段階ごとの説明文
+
+処理の流れ:
+1. 通知が有効か確認（無効なら何もしない）
+2. 同一エラーの重複通知を15分間抑制
+3. メッセージ組立 → Webhook POST — 失敗しても本処理には例外を出さない
+"""
 
 from __future__ import annotations
 
@@ -51,12 +61,18 @@ def notify_error(
     stage: str,
     exc: BaseException,
 ) -> None:
-    """ERROR 通知を Slack へ送る。失敗しても例外は出さない。"""
+    """ERROR 通知を Slack へ送る。失敗しても例外は出さない。
+
+    受け取る: 設定、run_id、段階名（config/fetch/sheets）、例外
+    返す: なし（副作用: Slack 送信 or ログのみ）
+    """
+    # 通知無効 or Webhook 未設定なら何もしない
     if not settings.slack_notify_enabled or not settings.slack_webhook_url:
         return
 
     stage_label, summary, next_action = STAGE_META[stage]
     detail = _sanitize(str(exc))
+    # 15分以内の同一エラーは再送しない
     if not _should_notify(settings.slack_dedup_state_file, stage, detail):
         return
 
@@ -71,6 +87,9 @@ def notify_error(
         log_file=settings.log_file,
     )
 
+    # Webhook 送信
+    # ・成功 → 送信時刻を状態ファイルに記録
+    # ・失敗 → ログに warn のみ（本処理は継続）
     try:
         _post_webhook(settings.slack_webhook_url, message)
         _record_notify(settings.slack_dedup_state_file, stage, detail)
@@ -89,6 +108,7 @@ def _build_message(
     next_action: str,
     log_file: Path,
 ) -> str:
+    """Slack 用の複数行メッセージを組み立てる。"""
     tz = ZoneInfo(timezone)
     timestamp_jst = datetime.now(tz=tz).strftime("%Y-%m-%d %H:%M:%S JST")
     try:
@@ -110,6 +130,7 @@ def _build_message(
 
 
 def _sanitize(text: str) -> str:
+    """Webhook URL・長い ID・パスをマスクして通知本文を安全化する。"""
     sanitized = _SLACK_WEBHOOK_RE.sub("[REDACTED]", text)
     sanitized = _PATH_RE.sub(_redact_path, sanitized)
     sanitized = _LONG_ID_RE.sub("[REDACTED]", sanitized)
@@ -130,9 +151,11 @@ def _dedup_key(stage: str, detail: str) -> str:
 
 
 def _should_notify(state_file: Path, stage: str, detail: str) -> bool:
+    """15分以内に同じエラーを送ったか判定する。送っていなければ True。"""
     key = _dedup_key(stage, detail)
     state = _load_state(state_file)
     last_sent_raw = state.get(key)
+    # 初回は必ず送る
     if not last_sent_raw:
         return True
 
@@ -148,6 +171,7 @@ def _should_notify(state_file: Path, stage: str, detail: str) -> bool:
 
 
 def _record_notify(state_file: Path, stage: str, detail: str) -> None:
+    """送信成功時刻を状態ファイルに記録する。"""
     key = _dedup_key(stage, detail)
     state = _load_state(state_file)
     state[key] = datetime.now(tz=UTC).isoformat(timespec="seconds")
@@ -155,6 +179,7 @@ def _record_notify(state_file: Path, stage: str, detail: str) -> None:
 
 
 def _load_state(state_file: Path) -> dict[str, str]:
+    """重複抑制用の JSON 状態を読む。壊れていれば空 dict。"""
     if not state_file.exists():
         return {}
     try:
@@ -167,11 +192,13 @@ def _load_state(state_file: Path) -> dict[str, str]:
 
 
 def _save_state(state_file: Path, state: dict[str, str]) -> None:
+    """重複抑制用の JSON 状態を書き込む。"""
     state_file.parent.mkdir(parents=True, exist_ok=True)
     state_file.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def _post_webhook(url: str, text: str) -> None:
+    """Slack Incoming Webhook に POST する。"""
     response = httpx.post(
         url,
         json={"text": text},

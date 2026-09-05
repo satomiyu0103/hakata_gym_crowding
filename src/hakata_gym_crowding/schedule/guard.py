@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from enum import StrEnum
 from zoneinfo import ZoneInfo
 
@@ -51,9 +51,14 @@ class ScheduleGuard:
         if today == third_monday:
             return ScheduleDecision(False, SkipReason.THIRD_MONDAY)
 
-        if today == third_monday.fromordinal(third_monday.toordinal() + 1):
-            if jpholiday.is_holiday(third_monday):
-                return ScheduleDecision(False, SkipReason.SUBSTITUTED_TUESDAY)
+        yesterday = today - timedelta(days=1)
+        third_monday_of_yesterday = self._third_monday(yesterday.year, yesterday.month)
+        if (
+            today.weekday() == 1
+            and yesterday == third_monday_of_yesterday
+            and jpholiday.is_holiday(third_monday_of_yesterday)
+        ):
+            return ScheduleDecision(False, SkipReason.SUBSTITUTED_TUESDAY)
 
         return ScheduleDecision(True)
 
@@ -67,9 +72,11 @@ class ScheduleGuard:
     def _third_monday(year: int, month: int) -> date:
         day = date(year, month, 1)
         mondays = 0
-        while True:
+        while day.month == month:
             if day.weekday() == 0:
                 mondays += 1
                 if mondays == 3:
                     return day
             day = day.fromordinal(day.toordinal() + 1)
+        msg = f"第3月曜が見つかりません: {year}-{month:02d}"
+        raise ValueError(msg)

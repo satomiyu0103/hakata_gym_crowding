@@ -57,3 +57,16 @@ def test_substituted_tuesday_when_third_monday_is_holiday() -> None:
     tuesday = guard.evaluate(_dt(2026, 9, 22, 10, 0))
     assert tuesday.should_run is False
     assert tuesday.reason == SkipReason.SUBSTITUTED_TUESDAY
+
+
+def test_first_tuesday_of_month_is_not_substituted_closure() -> None:
+    guard = ScheduleGuard()
+    decision = guard.evaluate(_dt(2022, 3, 1, 10, 0))
+    assert decision.should_run is True
+
+
+def test_third_monday_stays_in_requested_month() -> None:
+    for year in range(2020, 2031):
+        for month in range(1, 13):
+            third_monday = ScheduleGuard._third_monday(year, month)
+            assert third_monday.month == month

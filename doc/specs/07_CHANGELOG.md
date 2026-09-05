@@ -10,6 +10,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- `FR-SCHED-001` ScheduleGuard — 振替火曜を yesterday 基準に変更、`_third_monday` に月境界ガード
+- `FR-FETCH-001` PCounterFetcher — naive datetime を Asia/Tokyo として stale 判定
+- `FR-STORE-001` SheetsWriter — `gspread.Worksheet.update` の引数順を修正（`values` 先行）
+
 ### Added
 - `FR-FETCH-001` `FR-STORE-001` `FR-SCHED-001` `FR-LOG-001` 混雑取得 MVP — p-counter JSON 取得、Google Sheets 追記、ScheduleGuard、CLI、pytest、セットアップ doc
 

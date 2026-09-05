@@ -40,3 +40,13 @@ def test_fetch_snapshot_with_mock_transport() -> None:
     assert snapshot.gym_count == 58
     assert snapshot.source_time == "16:59:04"
     assert snapshot.status == RecordStatus.OK
+
+
+def test_is_stale_treats_naive_datetime_as_tokyo() -> None:
+    now = datetime(2026, 9, 5, 17, 0, 0)
+    assert PCounterFetcher._is_stale(now, "16:59:04") is False
+
+
+def test_is_stale_marks_old_naive_datetime_as_stale() -> None:
+    now = datetime(2026, 9, 5, 8, 0, 0)
+    assert PCounterFetcher._is_stale(now, "16:59:04") is True

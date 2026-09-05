@@ -71,7 +71,7 @@ class SheetsWriter:
 
         first_row = worksheet.row_values(1)
         if first_row != HEADER:
-            worksheet.update("A1:F1", [HEADER])
+            worksheet.update([HEADER], range_name="A1:F1")
 
         self._worksheet = worksheet
         return worksheet

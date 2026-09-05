@@ -53,6 +53,7 @@ class TrainingPageFetcher:
         )
 
     def close(self) -> None:
+        # テストで注入した Client は呼び出し側が閉じる
         if self._owns_client:
             self._client.close()
 
@@ -70,6 +71,7 @@ class TrainingPageFetcher:
     def _get_html(self, url: str) -> str:
         """HTTP GET で HTML を取得する。失敗時は指数バックオフでリトライ。"""
         last_error: Exception | None = None
+        # 最大3回まで GET を試す
         for attempt in range(MAX_RETRIES):
             try:
                 response = self._client.get(url)
@@ -77,6 +79,7 @@ class TrainingPageFetcher:
                 return response.text
             except httpx.HTTPError as exc:
                 last_error = exc
+                # 最終試行でなければ 1秒→2秒→4秒 待って再試行
                 if attempt < MAX_RETRIES - 1:
                     time.sleep(2**attempt)
         msg = f"HTML 取得に失敗しました: {url}"
@@ -105,6 +108,7 @@ def _parse_weather_label(html: str) -> str | None:
     if not match:
         return None
     icon_code = match.group(1).lower()
+    # 未知のアイコンコードは空欄のまま（ラベル変換表に無い場合）
     return WEATHER_ICON_LABELS.get(icon_code)
 
 
@@ -112,6 +116,7 @@ def _parse_span_int(html: str, class_name: str) -> int | None:
     """todayInfo 内の <span class="bold {class_name}"> から整数を取り出す。"""
     pattern = rf'<span class="bold {class_name}">(\d+)</span>'
     match = re.search(pattern, html)
+    # HTML 構造変更や欠損時は None（空セルになる）
     if not match:
         return None
     return int(match.group(1))

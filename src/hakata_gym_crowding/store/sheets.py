@@ -93,6 +93,7 @@ class SheetsWriter:
         self.append_record(row)
 
     def _get_worksheet(self) -> gspread.Worksheet:
+        # 同一実行内では worksheet を使い回す
         if self._worksheet is not None:
             return self._worksheet
 

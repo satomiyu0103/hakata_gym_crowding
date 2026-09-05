@@ -38,6 +38,7 @@ class ScheduleGuard:
 
     def evaluate(self, moment: datetime | None = None) -> ScheduleDecision:
         now = moment or datetime.now(tz=self._tz)
+        # 引数が naive なら JST を付与、aware なら JST に揃える
         if now.tzinfo is None:
             now = now.replace(tzinfo=self._tz)
         else:
@@ -49,10 +50,12 @@ class ScheduleGuard:
             return ScheduleDecision(False, SkipReason.OUTSIDE_HOURS)
 
         today = now.date()
+        # 年末年始（12/28〜1/4）は休館
         if self._is_new_year_closure(today):
             return ScheduleDecision(False, SkipReason.NEW_YEAR)
 
         third_monday = self._third_monday(today.year, today.month)
+        # 毎月第3月曜は休館
         if today == third_monday:
             return ScheduleDecision(False, SkipReason.THIRD_MONDAY)
 
@@ -70,14 +73,17 @@ class ScheduleGuard:
 
     @staticmethod
     def _is_new_year_closure(day: date) -> bool:
+        # 12/28 以降は年末休館
         if day.month == 12 and day.day >= 28:
             return True
+        # 1/4 までは年始休館
         return day.month == 1 and day.day <= 4
 
     @staticmethod
     def _third_monday(year: int, month: int) -> date:
         day = date(year, month, 1)
         mondays = 0
+        # 月初から月末まで1日ずつ進め、3番目の月曜を探す
         while day.month == month:
             if day.weekday() == 0:
                 mondays += 1

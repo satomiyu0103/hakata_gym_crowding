@@ -22,11 +22,13 @@ class Settings:
 
 def load_settings(env_file: Path | None = None, *, require_sheets: bool = True) -> Settings:
     """`.env` から設定を読み込む。"""
+    # 呼び出し側がパスを渡さなければプロジェクト直下の config/.env を使う
     if env_file is None:
         env_file = PROJECT_ROOT / "config" / ".env"
     load_dotenv(env_file)
 
     spreadsheet_id = os.getenv("SPREADSHEET_ID", "").strip()
+    # dry-run 以外は Sheets 書き込み先 ID が必須
     if require_sheets and not spreadsheet_id:
         msg = "SPREADSHEET_ID が未設定です。config/.env.example を参照してください。"
         raise ValueError(msg)
@@ -36,6 +38,7 @@ def load_settings(env_file: Path | None = None, *, require_sheets: bool = True) 
         "config/service-account.json",
     ).strip()
     credentials_path = Path(credentials_raw)
+    # 相対パスはリポジトリルート基準に解決する
     if not credentials_path.is_absolute():
         credentials_path = PROJECT_ROOT / credentials_path
 

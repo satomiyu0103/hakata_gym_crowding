@@ -49,6 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         settings = load_settings(require_sheets=not args.dry_run)
     except ValueError as exc:
+        # .env 未設定など設定エラーは stderr に出して終了
         print(exc, file=sys.stderr)
         return 1
 
@@ -69,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
         with PCounterFetcher() as fetcher:
             snapshot = fetcher.fetch_snapshot(now)
     except RuntimeError as exc:
+        # JSON 取得失敗はログに残して終了コード 1
         append_log(settings.log_file, f"error fetch={exc}")
         print(exc, file=sys.stderr)
         return 1
@@ -118,6 +120,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         writer.append_record(record)
     except Exception as exc:  # noqa: BLE001 - CLI 境界でログ化
+        # Sheets 書き込み失敗はログに残して終了コード 1
         append_log(settings.log_file, f"error sheets={exc}")
         print(exc, file=sys.stderr)
         return 1

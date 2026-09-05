@@ -88,6 +88,7 @@ class PCounterFetcher:
         node = data["hakata"][section]
         thresholds = node["threshold"]
         maintenance_raw = node.get("maintenance")
+        # maintenance は "1" 文字列で来ることがある
         maintenance = str(maintenance_raw) == "1" if maintenance_raw is not None else False
         return PCounterPayload(
             count=int(node["sum"]["area1"]),
@@ -103,11 +104,13 @@ class PCounterFetcher:
 
     def _get_json(self, url: str) -> dict[str, Any]:
         last_error: Exception | None = None
+        # 最大3回まで JSON GET を試す
         for attempt in range(MAX_RETRIES):
             try:
                 response = self._client.get(url)
                 response.raise_for_status()
                 payload = response.json()
+                # ルートが dict でない JSON はパースエラーとして扱う
                 if not isinstance(payload, dict):
                     msg = f"JSON ルートが dict ではありません: {url}"
                     raise TypeError(msg)
@@ -126,6 +129,7 @@ class PCounterFetcher:
         try:
             hour, minute, second = (int(part) for part in time_calc.split(":"))
         except ValueError:
+            # time_calc が壊れていれば安全側で stale とみなす
             return True
 
         local_now = now

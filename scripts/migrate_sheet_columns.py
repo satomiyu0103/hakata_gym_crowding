@@ -41,10 +41,12 @@ def migrate(*, dry_run: bool) -> int:
     header = all_values[0]
     data_rows = all_values[1:]
 
+    # すでに新スキーマなら何もしない
     if header == HEADER:
         print("既に新スキーマ（16列）です。移行は不要です。")
         return 0
 
+    # 旧6列以外のヘッダーは手動確認が必要
     if header != LEGACY_HEADER:
         print(
             "想定外のヘッダーです。手動確認してください。",
@@ -56,6 +58,7 @@ def migrate(*, dry_run: bool) -> int:
 
     converted: list[list[str | int | None]] = []
     skipped_count = 0
+    # 各行を新16列に変換し、不正行だけ stderr に出してスキップ
     for sheet_row_index, row in enumerate(data_rows, start=2):
         if not any(cell.strip() for cell in row):
             continue
@@ -65,6 +68,7 @@ def migrate(*, dry_run: bool) -> int:
             skipped_count += 1
             print(f"  行{sheet_row_index}: スキップ — {exc}", file=sys.stderr)
 
+    # データ行はあるのに1行も変換できなかったら失敗
     if not converted and any(any(cell.strip() for cell in row) for row in data_rows):
         print("変換可能なデータ行がありません。", file=sys.stderr)
         return 1
@@ -80,6 +84,7 @@ def migrate(*, dry_run: bool) -> int:
             print(f"  行{index}: {row[:4]}…")
         return 0
 
+    # 本番移行: シート全体をクリアして新データで上書き
     worksheet.clear()
     col_end = HEADER_RANGE.split(":")[1].replace("1", "")
     worksheet.update(new_sheet, range_name=f"A1:{col_end}{len(new_sheet)}")

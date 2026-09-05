@@ -31,8 +31,10 @@ def build_remarks(
 ) -> str:
     """備考列の文字列を組み立てる（stale・天気失敗時のみ）。"""
     parts: list[str] = []
+    # stale のときだけ理由を備考に載せる
     if status == RecordStatus.STALE_DATA:
         parts.append("stale=計測から5分以上経過")
+    # 天気 HTML 取得に失敗したときも備考に残す
     if weather_fetch_failed:
         parts.append("天気=取得失敗")
     return "; ".join(parts)
@@ -45,6 +47,7 @@ def build_crowding_record(
     weather_fetch_failed: bool = False,
 ) -> CrowdingRecord:
     """混雑スナップショットと天気を Sheets 1 行分のレコードにまとめる。"""
+    # 天気未取得時は空の WeatherSnapshot で空欄列を埋める
     weather_data = weather or WeatherSnapshot.empty()
     return CrowdingRecord(
         record_date=snapshot.recorded_at.strftime("%Y-%m-%d"),
@@ -93,6 +96,7 @@ def record_to_row(record: CrowdingRecord) -> list[str | int | None]:
 
 def _parse_legacy_snapshot(row: list[str]) -> CrowdingSnapshot:
     """旧6列の文字列リストを CrowdingSnapshot に変換する。不正時は LegacyRowParseError。"""
+    # 列数不足の行は空文字で6列に揃えてから読む
     if len(row) < 6:
         row = row + [""] * (6 - len(row))
     recorded_at_raw, train_count, train_level, gym_count, source_time, status_raw = row[:6]
@@ -100,6 +104,7 @@ def _parse_legacy_snapshot(row: list[str]) -> CrowdingSnapshot:
     recorded_at_text = recorded_at_raw.strip()
     if not recorded_at_text:
         raise LegacyRowParseError("recorded_at が空です")
+    # 日時は旧スキーマの固定形式のみ受け付ける
     try:
         recorded_at = datetime.strptime(recorded_at_text, LEGACY_RECORDED_AT_FORMAT)
     except ValueError:
@@ -131,6 +136,7 @@ def _parse_legacy_snapshot(row: list[str]) -> CrowdingSnapshot:
     status_text = status_raw.strip()
     if not status_text:
         raise LegacyRowParseError("status が空です")
+    # RecordStatus に無い文字列は行単位でスキップさせる
     try:
         status = RecordStatus(status_text)
     except ValueError:

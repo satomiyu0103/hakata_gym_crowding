@@ -35,6 +35,7 @@ config/.env
 config/.env.*
 !config/.env.example
 config/credentials.json
+config/service-account.json
 config/token.json
 config/*.pem
 config/*.key

@@ -10,6 +10,9 @@
 
 ## [Unreleased]
 
+### Added
+- `FR-FETCH-001` `FR-STORE-001` `FR-SCHED-001` `FR-LOG-001` 混雑取得 MVP — p-counter JSON 取得、Google Sheets 追記、ScheduleGuard、CLI、pytest、セットアップ doc
+
 - `docs` 4 層コードコメント規約 — `readable-code-comments` Skill・`doc/ai/guidelines/readable-code-comments.md`・`check-code-comments.py` / `stop-code-comments-followup.ps1` stop フック。`code_comments.mdc`・`junior-code-comments` を拡張
 - `docs` Windows デスクトップ MVP 要件ゲート — `desktop-windows-mvp-spec-gates.md` 新設、`qa_gate.md` §H、`試験実装のエラー.md` デスクトップ 3 件、`decisions` 索引。由来: 業務プロジェクト MVP 実機 FB（[sessions/2026-08-15_desktop-mvp-feedback-spec-lessons.md](doc/ai/sessions/2026-08-15_desktop-mvp-feedback-spec-lessons.md)）
 - `chore` `.gitignore` に AI Agent / Cursor 除外ブロックを追加 — 公開向け Git 管理のため `.cursor/`・`AGENTS.md`・`doc/ai/sessions/` 等を除外。`sync-manifest.json` の `overwrite` に `.gitignore` を追加し `dev-template-sync` で各プロジェクトへ配布可能に

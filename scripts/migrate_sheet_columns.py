@@ -4,14 +4,23 @@
   uv run python scripts/migrate_sheet_columns.py --dry-run
   uv run python scripts/migrate_sheet_columns.py
 """
+
 from __future__ import annotations
 
 import argparse
 import sys
 
 from hakata_gym_crowding.config import load_settings
-from hakata_gym_crowding.domain.record_format import convert_legacy_row
-from hakata_gym_crowding.store.sheets import HEADER, HEADER_RANGE, LEGACY_HEADER, SheetsWriter
+from hakata_gym_crowding.domain.record_format import (
+    LegacyRowParseError,
+    convert_legacy_row,
+)
+from hakata_gym_crowding.store.sheets import (
+    HEADER,
+    HEADER_RANGE,
+    LEGACY_HEADER,
+    SheetsWriter,
+)
 
 
 def migrate(*, dry_run: bool) -> int:
@@ -45,10 +54,26 @@ def migrate(*, dry_run: bool) -> int:
         print(f"  期待: {LEGACY_HEADER} または {HEADER}", file=sys.stderr)
         return 1
 
-    converted = [convert_legacy_row(row) for row in data_rows if any(cell.strip() for cell in row)]
+    converted: list[list[str | int | None]] = []
+    skipped_count = 0
+    for sheet_row_index, row in enumerate(data_rows, start=2):
+        if not any(cell.strip() for cell in row):
+            continue
+        try:
+            converted.append(convert_legacy_row(row))
+        except LegacyRowParseError as exc:
+            skipped_count += 1
+            print(f"  行{sheet_row_index}: スキップ — {exc}", file=sys.stderr)
+
+    if not converted and any(any(cell.strip() for cell in row) for row in data_rows):
+        print("変換可能なデータ行がありません。", file=sys.stderr)
+        return 1
+
     new_sheet = [HEADER] + converted
 
     print(f"移行対象: {len(converted)} 行")
+    if skipped_count:
+        print(f"スキップ: {skipped_count} 行（詳細は stderr）", file=sys.stderr)
     if dry_run:
         print("dry-run: 書き込みは行いません。")
         for index, row in enumerate(converted, start=2):

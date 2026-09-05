@@ -12,6 +12,11 @@ from hakata_gym_crowding.domain.models import (
 )
 
 WEEKDAY_LABELS = ("月", "火", "水", "木", "金", "土", "日")
+LEGACY_RECORDED_AT_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+class LegacyRowParseError(ValueError):
+    """旧6列行の変換に失敗したときの例外（移行スクリプトで行単位に捕捉する）。"""
 
 
 def weekday_label(moment: datetime) -> str:
@@ -86,19 +91,66 @@ def record_to_row(record: CrowdingRecord) -> list[str | int | None]:
     ]
 
 
-def convert_legacy_row(row: list[str]) -> list[str | int | None]:
-    """旧6列（英語ヘッダー）の1行を新16列の値リストに変換する。"""
+def _parse_legacy_snapshot(row: list[str]) -> CrowdingSnapshot:
+    """旧6列の文字列リストを CrowdingSnapshot に変換する。不正時は LegacyRowParseError。"""
     if len(row) < 6:
         row = row + [""] * (6 - len(row))
     recorded_at_raw, train_count, train_level, gym_count, source_time, status_raw = row[:6]
-    recorded_at = datetime.strptime(recorded_at_raw.strip(), "%Y-%m-%d %H:%M:%S")
-    snapshot = CrowdingSnapshot(
+
+    recorded_at_text = recorded_at_raw.strip()
+    if not recorded_at_text:
+        raise LegacyRowParseError("recorded_at が空です")
+    try:
+        recorded_at = datetime.strptime(recorded_at_text, LEGACY_RECORDED_AT_FORMAT)
+    except ValueError:
+        raise LegacyRowParseError(
+            "recorded_at の形式が不正です"
+            f"（期待: {LEGACY_RECORDED_AT_FORMAT}）: {recorded_at_text!r}",
+        ) from None
+
+    train_count_text = str(train_count).strip()
+    if not train_count_text:
+        raise LegacyRowParseError("train_count が空です")
+    try:
+        train_count_int = int(train_count_text)
+    except ValueError:
+        raise LegacyRowParseError(
+            f"train_count が整数ではありません: {train_count_text!r}",
+        ) from None
+
+    gym_count_text = str(gym_count).strip()
+    if not gym_count_text:
+        raise LegacyRowParseError("gym_count が空です")
+    try:
+        gym_count_int = int(gym_count_text)
+    except ValueError:
+        raise LegacyRowParseError(
+            f"gym_count が整数ではありません: {gym_count_text!r}",
+        ) from None
+
+    status_text = status_raw.strip()
+    if not status_text:
+        raise LegacyRowParseError("status が空です")
+    try:
+        status = RecordStatus(status_text)
+    except ValueError:
+        valid = ", ".join(member.value for member in RecordStatus)
+        raise LegacyRowParseError(
+            f"status が未定義です: {status_text!r}（有効: {valid}）",
+        ) from None
+
+    return CrowdingSnapshot(
         recorded_at=recorded_at,
-        train_count=int(train_count),
+        train_count=train_count_int,
         train_level=train_level,
-        gym_count=int(gym_count),
+        gym_count=gym_count_int,
         source_time=source_time,
-        status=RecordStatus(status_raw.strip()),
+        status=status,
     )
+
+
+def convert_legacy_row(row: list[str]) -> list[str | int | None]:
+    """旧6列（英語ヘッダー）の1行を新16列の値リストに変換する。"""
+    snapshot = _parse_legacy_snapshot(row)
     record = build_crowding_record(snapshot, None)
     return record_to_row(record)

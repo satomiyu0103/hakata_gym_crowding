@@ -3,12 +3,12 @@
 福岡市立博多体育館トレーニング室の混雑状況を定期取得する RPA。
 
 - **取得元**: [博多体育館 トレーニング室](https://ssk-hakata-gym.com/training/)
-- **状態**: 新規（テンプレ展開済み）
+- **状態**: Phase 1 MVP 実装済
 - **テンプレ**: ai-agent-devenv-template v2026.6
 
 ## 目的
 
-トレーニング室の混雑目安（空いている / やや混雑 / 混雑 / 大混雑）を定期的に取得し、履歴として蓄積する。利用前に混雑傾向を把握できるようにする。
+トレーニング室の混雑目安と体育館来場者数を定期的に取得し、Google スプレッドシートに履歴として蓄積する。利用前に混雑傾向を把握できるようにする。
 
 ### 混雑目安（公式サイトより）
 
@@ -19,12 +19,24 @@
 | 混雑しています | 25〜29人 |
 | 大混雑しています | 30人以上 |
 
-## 次のステップ
+## クイックスタート
 
-1. 取得元ページの HTML 構造を調査し、混雑表示の取得方法を確定する
-2. `doc/specs/02_要件定義.md` に FR/NFR を確定する
-3. Python + uv で `src/` を初期化し、定期実行（タスクスケジューラ等）を設計する
-4. Phase 1 着手時は [AGENTS.md](AGENTS.md) と [TEMPLATE_SETUP.md](TEMPLATE_SETUP.md) を参照する
+```powershell
+uv sync --group dev
+Copy-Item config\.env.example config\.env
+# config/.env と config/service-account.json を設定（下記 doc 参照）
+
+uv run python -m hakata_gym_crowding.cli --dry-run --force
+uv run python -m hakata_gym_crowding.cli
+uv run pytest
+```
+
+## セットアップ
+
+| 手順 | パス |
+|---|---|
+| Google スプレッドシート | [doc/reference/setup/google-sheets-hakata-crowding.md](doc/reference/setup/google-sheets-hakata-crowding.md) |
+| タスクスケジューラ（30分・9-22時） | [doc/reference/setup/windows-scheduled-sync.md](doc/reference/setup/windows-scheduled-sync.md) |
 
 ## ドキュメント
 

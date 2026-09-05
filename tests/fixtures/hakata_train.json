@@ -1,0 +1,18 @@
+{
+    "hakata": {
+        "train": {
+            "date_calc": "2026-09-05",
+            "maintenance": null,
+            "sum": {
+                "area1": "25"
+            },
+            "threshold": {
+                "rank1": "0",
+                "rank2": "15",
+                "rank3": "25",
+                "rank4": "30"
+            },
+            "time_calc": "16:59:04"
+        }
+    }
+}

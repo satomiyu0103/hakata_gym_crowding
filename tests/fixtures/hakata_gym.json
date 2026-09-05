@@ -1,0 +1,18 @@
+{
+    "hakata": {
+        "gym": {
+            "date_calc": "2026-09-05",
+            "maintenance": null,
+            "sum": {
+                "area1": "58"
+            },
+            "threshold": {
+                "rank1": "0",
+                "rank2": "80",
+                "rank3": "120",
+                "rank4": "160"
+            },
+            "time_calc": "16:59:04"
+        }
+    }
+}

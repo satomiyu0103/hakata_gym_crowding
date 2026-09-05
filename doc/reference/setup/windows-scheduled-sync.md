@@ -78,9 +78,12 @@ Register-ScheduledTask `
 | 種別 | パス |
 |---|---|
 | 実行ログ | `logs/run.log` |
+| Slack 重複抑制状態 | `logs/.slack_notify_state.json` |
 | データ | Google スプレッドシート「混雑履歴」 |
 
 `skipped_closed` は休館・時間外で正常スキップです。
+
+ERROR 時の Slack 通知設定: [slack-webhook-hakata-crowding.md](slack-webhook-hakata-crowding.md)
 
 ---
 

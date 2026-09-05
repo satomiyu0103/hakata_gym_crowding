@@ -18,6 +18,9 @@ class Settings:
     timezone: str
     sheet_name: str
     log_file: Path
+    slack_webhook_url: str
+    slack_notify_enabled: bool
+    slack_dedup_state_file: Path
 
 
 def load_settings(env_file: Path | None = None, *, require_sheets: bool = True) -> Settings:
@@ -47,10 +50,22 @@ def load_settings(env_file: Path | None = None, *, require_sheets: bool = True) 
     if not log_file.is_absolute():
         log_file = PROJECT_ROOT / log_file
 
+    slack_webhook_url = os.getenv("SLACK_WEBHOOK_URL", "").strip()
+    slack_notify_enabled = os.getenv("SLACK_NOTIFY_ENABLED", "true").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
+    slack_dedup_state_file = log_file.parent / ".slack_notify_state.json"
+
     return Settings(
         spreadsheet_id=spreadsheet_id,
         google_credentials=credentials_path,
         timezone=os.getenv("TIMEZONE", "Asia/Tokyo").strip(),
         sheet_name=os.getenv("SHEET_NAME", "混雑履歴").strip(),
         log_file=log_file,
+        slack_webhook_url=slack_webhook_url,
+        slack_notify_enabled=slack_notify_enabled,
+        slack_dedup_state_file=slack_dedup_state_file,
     )

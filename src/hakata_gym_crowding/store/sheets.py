@@ -6,9 +6,13 @@ from pathlib import Path
 
 import gspread
 from google.oauth2.service_account import Credentials
+from gspread.utils import ValueInputOption
 
 from hakata_gym_crowding.domain.models import CrowdingRecord, CrowdingSnapshot
-from hakata_gym_crowding.domain.record_format import build_crowding_record, record_to_row
+from hakata_gym_crowding.domain.record_format import (
+    build_crowding_record,
+    record_to_row,
+)
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
@@ -75,7 +79,7 @@ class SheetsWriter:
         worksheet = self._get_worksheet()
         worksheet.append_row(
             record_to_row(record),
-            value_input_option="USER_ENTERED",
+            value_input_option=ValueInputOption.user_entered,
         )
 
     def append_snapshot(

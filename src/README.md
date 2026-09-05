@@ -23,7 +23,8 @@ hakata_gym_crowding/
 ├── domain/             # モデル・混雑ラベル・行組立
 ├── fetch/              # p-counter JSON・training ページ天気
 ├── schedule/           # ScheduleGuard（9:00–22:00・休館日）
-└── store/              # Google Sheets 書き込み
+├── store/              # Google Sheets 書き込み
+└── notify/             # Slack ERROR 通知（FR-LOG-002）
 ```
 
 ## 依存先
@@ -33,7 +34,8 @@ hakata_gym_crowding/
 | p-counter JSON ×2 | 混雑人数・計測時刻 |
 | ssk-hakata-gym.com/training/ | 天気 6 項目（HTML） |
 | Google Sheets API | 履歴保存 |
-| `config/.env` | スプレッドシート ID・認証 JSON パス |
+| Slack Incoming Webhook | ERROR 通知（任意） |
+| `config/.env` | スプレッドシート ID・認証 JSON パス・Webhook URL |
 
 ## ローカル実行
 
@@ -43,4 +45,4 @@ uv run python -m hakata_gym_crowding.cli --dry-run --force
 uv run python -m hakata_gym_crowding.cli
 ```
 
-詳細: [doc/reference/setup/google-sheets-hakata-crowding.md](../doc/reference/setup/google-sheets-hakata-crowding.md)
+詳細: [doc/reference/setup/google-sheets-hakata-crowding.md](../doc/reference/setup/google-sheets-hakata-crowding.md) · [Slack 通知](../doc/reference/setup/slack-webhook-hakata-crowding.md)

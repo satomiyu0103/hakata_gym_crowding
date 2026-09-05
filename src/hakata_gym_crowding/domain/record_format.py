@@ -72,7 +72,7 @@ def build_crowding_record(
     )
 
 
-def record_to_row(record: CrowdingRecord) -> list[str | int | None]:
+def record_to_row(record: CrowdingRecord) -> list[str | int]:
     """CrowdingRecord をスプレッドシート追記用の値リストに変換する。"""
     return [
         record.record_date,

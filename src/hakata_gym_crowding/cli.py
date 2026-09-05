@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import sys
 from datetime import datetime
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from hakata_gym_crowding.config import load_settings
@@ -21,6 +22,7 @@ from hakata_gym_crowding.domain.record_format import build_crowding_record
 from hakata_gym_crowding.fetch.pcounter import PCounterFetcher
 from hakata_gym_crowding.fetch.training_page import TrainingPageFetcher
 from hakata_gym_crowding.logging_utils import append_log
+from hakata_gym_crowding.notify.slack import notify_error
 from hakata_gym_crowding.schedule.guard import ScheduleGuard
 from hakata_gym_crowding.store.sheets import SheetsWriter
 
@@ -46,11 +48,20 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    default_tz = ZoneInfo("Asia/Tokyo")
+    run_id = datetime.now(tz=default_tz).strftime("%Y%m%d-%H%M%S") + f"-{uuid4().hex[:4]}"
+
     try:
         settings = load_settings(require_sheets=not args.dry_run)
     except ValueError as exc:
         # .env 未設定など設定エラーは stderr に出して終了
         print(exc, file=sys.stderr)
+        try:
+            notify_settings = load_settings(require_sheets=False)
+        except ValueError:
+            notify_settings = None
+        if notify_settings is not None:
+            notify_error(notify_settings, run_id=run_id, stage="config", exc=exc)
         return 1
 
     tz = ZoneInfo(settings.timezone)
@@ -72,6 +83,7 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         # JSON 取得失敗はログに残して終了コード 1
         append_log(settings.log_file, f"error fetch={exc}")
+        notify_error(settings, run_id=run_id, stage="fetch", exc=exc)
         print(exc, file=sys.stderr)
         return 1
 
@@ -122,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001 - CLI 境界でログ化
         # Sheets 書き込み失敗はログに残して終了コード 1
         append_log(settings.log_file, f"error sheets={exc}")
+        notify_error(settings, run_id=run_id, stage="sheets", exc=exc)
         print(exc, file=sys.stderr)
         return 1
 

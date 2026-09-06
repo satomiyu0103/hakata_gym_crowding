@@ -37,6 +37,7 @@ uv run pytest
 |---|---|
 | Google スプレッドシート | [doc/reference/setup/google-sheets-hakata-crowding.md](doc/reference/setup/google-sheets-hakata-crowding.md) |
 | タスクスケジューラ（30分・9-22時） | [doc/reference/setup/windows-scheduled-sync.md](doc/reference/setup/windows-scheduled-sync.md) |
+| 手動実行（デスクトップショートカット） | 同上「手動実行（デスクトップ・パターン A）」 |
 
 ## ドキュメント
 

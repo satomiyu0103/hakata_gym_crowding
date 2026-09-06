@@ -10,7 +10,7 @@
 
 - [google-sheets-hakata-crowding.md](google-sheets-hakata-crowding.md) の初回セットアップ完了
 - `uv sync` 済み
-- リポジトリパス例: `D:\pc_handover_2026-07\Documents\RPA_scripts\hakata_gym_crowding`
+- リポジトリパス例: `D:\pc_handover_2026-07\Documents\Development\RPA_scripts\hakata_gym_crowding`
 
 ---
 
@@ -50,7 +50,7 @@ uv run hakata-crowding
 `uv` のフルパスを `$uvPath` に置き換えて実行します。
 
 ```powershell
-$repo = "D:\pc_handover_2026-07\Documents\RPA_scripts\hakata_gym_crowding"
+$repo = "D:\pc_handover_2026-07\Documents\Development\RPA_scripts\hakata_gym_crowding"
 $uvPath = (Get-Command uv).Source
 
 $action = New-ScheduledTaskAction `
@@ -96,6 +96,18 @@ uv run python -m hakata_gym_crowding.cli --dry-run --force
 # 休館判定を無視して Sheets 書込（設定済みの場合）
 uv run python -m hakata_gym_crowding.cli --force
 ```
+
+---
+
+## リポジトリ移動後（必須）
+
+リポジトリのパスを変えたとき、デスクトップショートカットだけ更新しても **定期実行は止まったまま** になる。次を **セット** で行う。
+
+1. ショートカット再作成（[手動実行（デスクトップ・パターン A）](#手動実行デスクトップパターン-a) の `create_desktop_shortcuts.ps1`）
+2. タスク `HakataGymCrowding` の **開始（作業フォルダ）** を新しいリポジトリルートに変更（[PowerShell 登録例](#powershell-登録例上級) の `$repo` を現パスに合わせて `Set-ScheduledTask`）
+3. `uv run python -m hakata_gym_crowding.cli --dry-run --force` で `logs/run.log` を確認
+
+症状・エラーコード `0x8007010B`: [試験実装のエラー.md](../../ai/guidelines/試験実装のエラー.md)（2026-09-06 項）
 
 ---
 

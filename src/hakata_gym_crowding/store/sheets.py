@@ -57,14 +57,14 @@ HEADER = [
 ]
 
 
-def _col_letter(count: int) -> str:
+def _col_letter(column_count: int) -> str:
     """列数からスプレッドシート列記号（A, B, … Z, AA）を返す。"""
-    result = ""
-    n = count
+    column_letters = ""
+    n = column_count
     while n > 0:
         n, remainder = divmod(n - 1, 26)
-        result = chr(65 + remainder) + result
-    return result
+        column_letters = chr(65 + remainder) + column_letters
+    return column_letters
 
 
 HEADER_RANGE = f"A1:{_col_letter(len(HEADER))}1"

@@ -25,4 +25,4 @@ def 混雑ラベル(人数, 閾値):
 
 | D形式の名前 | 実コードの名前 | ファイル |
 |---|---|---|
-| 混雑ラベル | `crowding_level()` | `src/hakata_gym_crowding/domain/crowding.py` |
+| 混雑ラベル | `crowding_level(occupant_count, thresholds)` | `src/hakata_gym_crowding/domain/crowding.py` |

@@ -88,8 +88,8 @@ def test_notify_error_posts_to_webhook(mock_post: MagicMock, tmp_path: Path) -> 
     notify_error(settings, run_id="run-1", stage="sheets", exc=RuntimeError("write failed"))
 
     mock_post.assert_called_once()
-    payload = mock_post.call_args.kwargs["json"]
-    assert payload["text"].startswith("[ERROR] 博多混雑RPA — Sheets 書込")
+    post_json = mock_post.call_args.kwargs["json"]
+    assert post_json["text"].startswith("[ERROR] 博多混雑RPA — Sheets 書込")
 
 
 @patch("hakata_gym_crowding.notify.slack.httpx.post")

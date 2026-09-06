@@ -17,6 +17,8 @@
 - `FR-LOG-002` 障害 Slack 通知 — ERROR 時（設定・混雑取得・Sheets 書込）に Incoming Webhook へ送信、15 分重複抑制
 
 ### Changed
+- `refactor` 変数命名段階修正 — inventory 11件をモジュール単位でリネーム（pcounter / domain / slack / cli / sheets / test）。pytest 36 件 pass、台帳全行 `[x]`
+- `docs` 変数命名インベントリ運用 — 汎用正本 `variable-naming-inventory-ops.md`（テンプレ overwrite）とプロジェクト台帳 `variable-naming-inventory.md`（exclude）の二層化。博多固有語彙・違反8件・例外2件を台帳に記載。ai-agent v2026.9 / ds v2026.5 へ配布
 - `docs` ジュニア向け変数命名 — `naming_conventions` 拡張、`junior-friendly-naming` Skill、`check-variable-naming.py` stop フック、既存違反 inventory（一括リネームなし）
 - `docs` ジュニア向けコメント三層モデル（L1/L2/L3）— 全12 `src/` モジュールに処理の流れ・分岐・例外コメント整備、`junior_code_reading` Rule・`junior-code-reading` Skill、D形式解説12本（`doc/reference/getting-started/d-format/`）、`読み方.md`・`コード解説.md` 索引
 - `docs` Phase 2.0 残タスク — `08_検証設計.md` 実データ化、`src/README.md` 拡充、全 `src/` にジュニア向けブロックコメント

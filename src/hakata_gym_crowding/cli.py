@@ -139,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
         weather_fetch_failed=weather_fetch_failed,
     )
 
-    line = (
+    status_summary_line = (
         f"status={snapshot.status.value} "
         f"train={snapshot.train_count}({snapshot.train_level}) "
         f"gym={snapshot.gym_count} "
@@ -149,16 +149,16 @@ def main(argv: list[str] | None = None) -> int:
         f"rain={record.precipitation_pct}% "
         f"source_time={snapshot.source_time}"
     )
-    print(line)
+    print(status_summary_line)
 
     # dry-run なら表示のみで終了(0)
     if args.dry_run:
-        append_log(settings.log_file, f"dry_run {line}")
+        append_log(settings.log_file, f"dry_run {status_summary_line}")
         return 0
 
     # [手順6] メンテナンス中はサイトが停止しているため Sheets へ書かず終了(0)
     if snapshot.status == RecordStatus.MAINTENANCE:
-        append_log(settings.log_file, f"maintenance {line}")
+        append_log(settings.log_file, f"maintenance {status_summary_line}")
         return 0
 
     # [手順7] Sheets 追記
@@ -177,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
         print(exc, file=sys.stderr)
         return 1
 
-    append_log(settings.log_file, f"ok {line}")
+    append_log(settings.log_file, f"ok {status_summary_line}")
     return 0
 
 

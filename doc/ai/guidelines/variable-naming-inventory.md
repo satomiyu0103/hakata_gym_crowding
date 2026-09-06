@@ -27,14 +27,18 @@
 
 | 状態 | 優先度 | ファイル | 現行名 | 推奨名 | 理由 |
 |---|---|---|---|---|---|
-| [ ] | 高 | `src/hakata_gym_crowding/fetch/pcounter.py` L103 | `data` | `parsed_json` | 禁止語 `data` |
-| [ ] | 高 | `src/hakata_gym_crowding/fetch/pcounter.py` L104 | `node` | `hakata_section_json` | 単体では何の JSON か不明 |
-| [ ] | 高 | `src/hakata_gym_crowding/fetch/pcounter.py` L137 | `payload` | `parsed_response_json` | 型名 `PCounterPayload` と混同 |
-| [ ] | 中 | `src/hakata_gym_crowding/domain/crowding.py` L23 | `count`（引数） | `occupant_count` | 単体では何の人数か不明 |
-| [ ] | 中 | `src/hakata_gym_crowding/notify/slack.py` | `state` | `dedup_state` | 通知文脈が名前に無い |
-| [ ] | 中 | `src/hakata_gym_crowding/notify/slack.py` | `payload` | `state_json` | 汎用名 |
-| [ ] | 中 | `src/hakata_gym_crowding/domain/record_format.py` L64 | `weather_data` | `resolved_weather` | `_data` 接尾辞が汎用 |
-| [ ] | 低 | `src/hakata_gym_crowding/cli.py` L142 | `line` | `status_summary_line` | 内容が名前に無い |
+| [x] | 高 | `src/hakata_gym_crowding/fetch/pcounter.py` L103 | `data` | `parsed_json` | 禁止語 `data` |
+| [x] | 高 | `src/hakata_gym_crowding/fetch/pcounter.py` L104 | `node` | `hakata_section_json` | 単体では何の JSON か不明 |
+| [x] | 高 | `src/hakata_gym_crowding/fetch/pcounter.py` L137 | `payload` | `parsed_response_json` | 型名 `PCounterPayload` と混同 |
+| [x] | 中 | `src/hakata_gym_crowding/domain/crowding.py` L23 | `count`（引数） | `occupant_count` | 単体では何の人数か不明 |
+| [x] | 中 | `src/hakata_gym_crowding/notify/slack.py` | `state` | `dedup_state` | 通知文脈が名前に無い |
+| [x] | 中 | `src/hakata_gym_crowding/notify/slack.py` | `payload` | `state_json` | 汎用名 |
+| [x] | 中 | `src/hakata_gym_crowding/domain/record_format.py` L64 | `weather_data` | `resolved_weather` | `_data` 接尾辞が汎用 |
+| [x] | 低 | `src/hakata_gym_crowding/cli.py` L142 | `line` | `status_summary_line` | 内容が名前に無い |
+| [x] | 低 | `src/hakata_gym_crowding/store/sheets.py` L60 | `count`（引数） | `column_count` | 単体禁止語（列数） |
+| [x] | 低 | `src/hakata_gym_crowding/store/sheets.py` L62 | `result` | `column_letters` | 禁止語 `result`（列記号の累積） |
+| [x] | 低 | `tests/test_slack_notify.py` L91 | `payload` | `post_json` | テスト内ローカル（Webhook POST body） |
+| [x] | 中 | `src/hakata_gym_crowding/notify/slack.py` L194 | `state`（`_save_state` 引数） | `dedup_state` | 重複抑制状態 dict |
 
 ## 例外（維持）
 

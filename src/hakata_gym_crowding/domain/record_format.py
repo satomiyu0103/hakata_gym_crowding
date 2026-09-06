@@ -61,18 +61,18 @@ def build_crowding_record(
 ) -> CrowdingRecord:
     """混雑スナップショットと天気を Sheets 1 行分のレコードにまとめる。"""
     # 天気未取得時は空の WeatherSnapshot で空欄列を埋める
-    weather_data = weather or WeatherSnapshot.empty()
+    resolved_weather = weather or WeatherSnapshot.empty()
     return CrowdingRecord(
         record_date=snapshot.recorded_at.strftime("%Y-%m-%d"),
         weekday_label=weekday_label(snapshot.recorded_at),
         fetch_time=snapshot.recorded_at.strftime("%H:%M:%S"),
         measure_time=snapshot.source_time,
-        weather_label=weather_data.weather_label or "",
-        temp_high_c=weather_data.temp_high_c,
-        temp_low_c=weather_data.temp_low_c,
-        wind_speed_mps=weather_data.wind_speed_mps,
-        wind_direction=weather_data.wind_direction or "",
-        precipitation_pct=weather_data.precipitation_pct,
+        weather_label=resolved_weather.weather_label or "",
+        temp_high_c=resolved_weather.temp_high_c,
+        temp_low_c=resolved_weather.temp_low_c,
+        wind_speed_mps=resolved_weather.wind_speed_mps,
+        wind_direction=resolved_weather.wind_direction or "",
+        precipitation_pct=resolved_weather.precipitation_pct,
         status=snapshot.status,
         train_count=snapshot.train_count,
         train_level=snapshot.train_level,

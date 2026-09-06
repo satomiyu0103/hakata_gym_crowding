@@ -100,17 +100,18 @@ class PCounterFetcher:
 
     def _fetch_payload(self, url: str, *, section: str) -> PCounterPayload:
         """1 つの JSON から人数・閾値・メンテフラグを取り出す。"""
-        data = self._get_json(url)
-        node = data["hakata"][section]
-        thresholds = node["threshold"]
-        maintenance_raw = node.get("maintenance")
+        parsed_json = self._get_json(url)
+        hakata_section_json = parsed_json["hakata"][section]
+        thresholds = hakata_section_json["threshold"]
+        maintenance_raw = hakata_section_json.get("maintenance")
         # maintenance は "1" 文字列で来ることがある
         maintenance = str(maintenance_raw) == "1" if maintenance_raw is not None else False
+        section_occupant_count = int(hakata_section_json["sum"]["area1"])
         return PCounterPayload(
-            count=int(node["sum"]["area1"]),
-            time_calc=str(node["time_calc"]),
-            maintenance=maintenance,
-            thresholds=Thresholds(
+            section_occupant_count,
+            str(hakata_section_json["time_calc"]),
+            maintenance,
+            Thresholds(
                 rank1=int(thresholds["rank1"]),
                 rank2=int(thresholds["rank2"]),
                 rank3=int(thresholds["rank3"]),
@@ -134,12 +135,12 @@ class PCounterFetcher:
             try:
                 response = self._client.get(url)
                 response.raise_for_status()
-                payload = response.json()
+                parsed_response_json = response.json()
                 # ルートが dict でない JSON はパースエラーとして扱う
-                if not isinstance(payload, dict):
+                if not isinstance(parsed_response_json, dict):
                     msg = f"JSON ルートが dict ではありません: {url}"
                     raise TypeError(msg)
-                return payload
+                return parsed_response_json
             except (httpx.HTTPError, ValueError, TypeError) as exc:
                 last_error = exc
                 # 指数バックオフ: 1秒 → 2秒 → 4秒

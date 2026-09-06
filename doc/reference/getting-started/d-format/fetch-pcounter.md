@@ -51,4 +51,5 @@ def GETしてパース(URL):
 |---|---|---|
 | 混雑を取得 | `PCounterFetcher.fetch_snapshot()` | `src/hakata_gym_crowding/fetch/pcounter.py` |
 | GETしてパース | `_get_json()` / `_fetch_payload()` | 同上 |
+| パース済み JSON（ローカル） | `parsed_json` / `parsed_response_json` / `hakata_section_json` | 同上（2026-09-06 命名改善） |
 | 閾値からラベル | `crowding_level()` | `src/hakata_gym_crowding/domain/crowding.py` |

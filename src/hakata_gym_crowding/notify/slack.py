@@ -153,8 +153,8 @@ def _dedup_key(stage: str, detail: str) -> str:
 def _should_notify(state_file: Path, stage: str, detail: str) -> bool:
     """15分以内に同じエラーを送ったか判定する。送っていなければ True。"""
     key = _dedup_key(stage, detail)
-    state = _load_state(state_file)
-    last_sent_raw = state.get(key)
+    dedup_state = _load_state(state_file)
+    last_sent_raw = dedup_state.get(key)
     # 初回は必ず送る
     if not last_sent_raw:
         return True
@@ -173,9 +173,9 @@ def _should_notify(state_file: Path, stage: str, detail: str) -> bool:
 def _record_notify(state_file: Path, stage: str, detail: str) -> None:
     """送信成功時刻を状態ファイルに記録する。"""
     key = _dedup_key(stage, detail)
-    state = _load_state(state_file)
-    state[key] = datetime.now(tz=UTC).isoformat(timespec="seconds")
-    _save_state(state_file, state)
+    dedup_state = _load_state(state_file)
+    dedup_state[key] = datetime.now(tz=UTC).isoformat(timespec="seconds")
+    _save_state(state_file, dedup_state)
 
 
 def _load_state(state_file: Path) -> dict[str, str]:
@@ -183,18 +183,18 @@ def _load_state(state_file: Path) -> dict[str, str]:
     if not state_file.exists():
         return {}
     try:
-        payload = json.loads(state_file.read_text(encoding="utf-8"))
+        state_json = json.loads(state_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
-    if isinstance(payload, dict):
-        return {str(k): str(v) for k, v in payload.items()}
+    if isinstance(state_json, dict):
+        return {str(k): str(v) for k, v in state_json.items()}
     return {}
 
 
-def _save_state(state_file: Path, state: dict[str, str]) -> None:
+def _save_state(state_file: Path, dedup_state: dict[str, str]) -> None:
     """重複抑制用の JSON 状態を書き込む。"""
     state_file.parent.mkdir(parents=True, exist_ok=True)
-    state_file.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    state_file.write_text(json.dumps(dedup_state, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def _post_webhook(url: str, text: str) -> None:

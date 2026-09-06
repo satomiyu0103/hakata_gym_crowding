@@ -11,11 +11,13 @@
 ## [Unreleased]
 
 ### Added
+- `FR-SCHED-001` 手動実行 — `scripts/run_hakata_crowding.bat`（正本）とデスクトップ `RPA` ショートカット作成用 `create_desktop_shortcuts.ps1`
 - `FR-FETCH-002` 天気取得 — トレーニング室ページ HTML から天気・最高/最低気温・風速・風向・降水確率を取得
 - `FR-STORE-002` 列スキーマ拡張 — 混雑履歴を日本語16列に変更（取得時間＋計測時間）、旧6列移行スクリプト
 - `FR-LOG-002` 障害 Slack 通知 — ERROR 時（設定・混雑取得・Sheets 書込）に Incoming Webhook へ送信、15 分重複抑制
 
 ### Changed
+- `docs` ジュニア向け変数命名 — `naming_conventions` 拡張、`junior-friendly-naming` Skill、`check-variable-naming.py` stop フック、既存違反 inventory（一括リネームなし）
 - `docs` ジュニア向けコメント三層モデル（L1/L2/L3）— 全12 `src/` モジュールに処理の流れ・分岐・例外コメント整備、`junior_code_reading` Rule・`junior-code-reading` Skill、D形式解説12本（`doc/reference/getting-started/d-format/`）、`読み方.md`・`コード解説.md` 索引
 - `docs` Phase 2.0 残タスク — `08_検証設計.md` 実データ化、`src/README.md` 拡充、全 `src/` にジュニア向けブロックコメント
 

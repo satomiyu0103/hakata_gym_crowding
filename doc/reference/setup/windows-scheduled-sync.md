@@ -99,6 +99,36 @@ uv run python -m hakata_gym_crowding.cli --force
 
 ---
 
+## 手動実行（デスクトップ・パターン A）
+
+BAT の **正本はリポジトリ内**、デスクトップには **ショートカットのみ** 置く運用です。BAT を更新するとショートカット経由でも即反映されます。
+
+| 種別 | パス |
+|---|---|
+| 通常実行 BAT（正本） | `scripts/run_hakata_crowding.bat` |
+| テスト用 BAT（正本） | `scripts/run_hakata_crowding_dry_run.bat`（`--dry-run --force`） |
+| ショートカット作成 | `scripts/create_desktop_shortcuts.ps1` |
+| デスクトップ配置先 | `%USERPROFILE%\Desktop\RPA\` |
+
+### 初回・PC 移行後
+
+リポジトリルートで次を実行します。
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\create_desktop_shortcuts.ps1
+```
+
+作成されるショートカット:
+
+| ショートカット名 | 内容 |
+|---|---|
+| `博多体育館混雑取得.lnk` | 通常実行（開館判定あり・Sheets 追記） |
+| `博多体育館混雑取得_テスト.lnk` | dry-run（取得のみ・休館判定スキップ） |
+
+ダブルクリック後、黒い画面（コマンドプロンプト）に結果が表示され、キー入力で閉じます。エラー時は `logs/run.log` を確認してください。
+
+---
+
 ## 関連
 
 - Sheets セットアップ: [google-sheets-hakata-crowding.md](google-sheets-hakata-crowding.md)

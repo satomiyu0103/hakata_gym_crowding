@@ -43,7 +43,7 @@
 
 | 概要 | メモ |
 |---|---|
-|  |  |
+| ジュニア向け変数命名のすり合わせ | 2026-09-06 以降。計画: [plans/junior-variable-naming-alignment.md](plans/junior-variable-naming-alignment.md) |
 
 ---
 

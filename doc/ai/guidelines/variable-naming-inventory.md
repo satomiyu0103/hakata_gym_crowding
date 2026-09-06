@@ -1,13 +1,27 @@
-# 変数命名インベントリ（既存違反・参照用）
+# 変数命名インベントリ — 博多体育館トレーニング室混雑 RPA
 
 最終更新: 2026-09-06
 
-## 運用方針
+> **運用方法（テンプレ正本）**: [variable-naming-inventory-ops.md](variable-naming-inventory-ops.md)  
+> 本ファイルは **博多体育館プロジェクト固有** の台帳。`publish` では上書きされない。
 
-- **一括リネームはしない**。ファイルを触ったときに、その範囲だけ改善する。
-- 新規・変更コードは [naming_conventions.mdc](../../.cursor/rules/naming_conventions.mdc) と [junior-friendly-naming/SKILL.md](../../.cursor/skills/junior-friendly-naming/SKILL.md) に従う。
-- stop フック（`check-variable-naming.py`）は **git diff の追加行のみ** 検査する。下表は既存コードの参照用。
-- 解消した行は `[x]` に更新する（行は削除しない）。
+## プロジェクト語彙（博多固有）
+
+| 語彙 | 意味 |
+|---|---|
+| `gym` | 体育館エリア（ピープルカウンター JSON の gym セクション） |
+| `train` | トレーニング室エリア（train セクション） |
+| `crowding` | 混雑状況・人数ベースの判定 |
+| `weather` | トレーニング室ページから取得する天気 |
+| `snapshot` | 混雑 JSON 取得直後の1件（シート行変換前） |
+| `record` | スプレッドシート16列の1行（`CrowdingRecord`） |
+| `worksheet` | Google スプレッドシートのシート（タブ） |
+| `spreadsheet` | 混雑履歴の保存先スプレッドシート全体 |
+| `run_id` | 定期実行の1回を識別する ID（ログ・Slack 通知） |
+| `maintenance` | サイトメンテナンス中フラグ |
+| `stale` | 計測時刻が5分以上古いデータ |
+| `notify` | Slack 障害通知 |
+| `schedule` | 開館時間・休館日の実行判定 |
 
 ## 違反一覧
 
@@ -37,12 +51,14 @@
 | `cli.py` | `snapshot` | ドメイン語（取得直後1件） |
 | `domain/models.py` | `train_count`, `gym_count` | `{場所}_{属性}` |
 | `domain/record_format.py` | `build_crowding_record` | `{動詞}_{対象}` |
+| `notify/slack.py` | `notify_settings` | `{用途}_{対象}` |
 
 ## 関連
 
-- 命名規約: [naming_conventions.mdc](../../.cursor/rules/naming_conventions.mdc)
-- 手順: [junior-friendly-naming/SKILL.md](../../.cursor/skills/junior-friendly-naming/SKILL.md)
-- すり合わせ計画: [junior-variable-naming-alignment.md](../../doc/specs/plans/junior-variable-naming-alignment.md)
+- 運用: [variable-naming-inventory-ops.md](variable-naming-inventory-ops.md)
+- 命名規約: [naming_conventions.mdc](../../../.cursor/rules/naming_conventions.mdc)
+- 手順: [junior-friendly-naming/SKILL.md](../../../.cursor/skills/junior-friendly-naming/SKILL.md)
+- すり合わせ: [junior-variable-naming-alignment.md](../../specs/plans/junior-variable-naming-alignment.md)
 
 ## 将来検討
 

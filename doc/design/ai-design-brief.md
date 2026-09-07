@@ -3,14 +3,15 @@
 > **出典**: [AIでおしゃれな画面を作るためのデザインシステムを学ぼう！](https://qiita.com/yusuke_ando_vj/items/dd17a285217a15841a3a)（Yusuke Ando / VISIONARY JAPAN、2026-06）
 > **正本アーティファクト**: [`DESIGN.md`](../../DESIGN.md)（プロジェクトルート）
 > **上位正本**（Documents 秘書層）: `doc/life/playbook/ai-design-brief.md` — `sync-design-pack.ps1` で同期
-> **関連 skill**: `design-md`, `awesome-design-md-jp`（`~/.agents/skills/`）、`playwright-cli`（グローバル skill。Documents ワークスペースでは `.cursor/skills/playwright-cli/`）
+> **関連 skill**: `design-md`, `awesome-design-md-jp`（`~/.agents/skills/`）、`playwright-cli`（Documents ワークスペースでは `.agents/skills/playwright-cli/`）
 
 
 ## このプロジェクトでの使い方
 
 | 展開元テンプレ | 主な用途 | 読むセクション |
 |---|---|---|
-| **RPA / Web**（`ai-agent-devenv-template`） | Web アプリ・管理画面 UI | Web アプリ、14 観点全体 |
+| **RPA**（`ai-agent-devenv-template`） | 管理画面・バッチ UI | Web アプリ、14 観点全体 |
+| **Web**（`web-static-template`） | 静的サイト・Cloudflare Pages | Web アプリ、14 観点全体 |
 | **DS**（`ds-analysis-template`） | 分析図・プレゼン資料 | §7 カラー、パワポ、社内報告 + [visualization](../../.cursor/skills/visualization/SKILL.md) |
 
 **正本の置き場所（展開後）**
@@ -28,6 +29,18 @@
 「おしゃれにして」「いい感じにして」だけでは AI・デザイナーへの依頼がズレる。**何を定義すべきか**を媒体別に整理し、再現性のある `DESIGN.md` とプロンプトに落とす。
 
 **学び始めの使い方**: 下の「用語・選択リスト」から各セクションで **1 つ以上選んで** Step 1 のブリーフに書くだけでよい。全部決めなくてよい。迷ったら「目的別クイック指定」から入る。
+
+## 原文（利用者発話）
+
+> チャット投稿の原文。エージェントによる要約・言い換えはしない。温度感・背景・要求の参照用。
+
+### 2026-07-08 — 用語リストから選ぶだけ
+
+> 学び始めはリストから選ぶだけにしたい
+
+### 2026-07-08 — Gemini カスタム指示の正本化
+
+> Gemini向けカスタム指示を正本としてワークスペース化
 
 ---
 
@@ -637,6 +650,36 @@ Stitch 連携時は `design-md` skill で既存プロジェクトから `DESIGN.
 | イベント LP | ポップ × カード型 × イラスト、日時・場所・CTA を明確に |
 | キーノート | ダーク or ミニマル、1 スライド 1 メッセージ、大きな見出し |
 | 社内報告 | コーポレート、表・グラフ中心、文字量多めでも階層を明確に |
+
+---
+
+## 調査用チャート（生活・家計・制度）
+
+`doc/life/research/` 等の **参考チャート**（SVG/HTML）では数値表記と凡例配置を [chart-format-ja](../../../.cursor/skills/chart-format-ja/SKILL.md) に従う。
+
+- 縦軸: `110千` ではなく `11万` / `16.4万` 形式
+- 損益分岐ラベル: `16万4千` ではなく `16.4万`
+- 凡例カード: **プロット右下**（またはグラフ外）。系列線・塗りと重ならない — [chart-format-ja](../../../.cursor/skills/chart-format-ja/SKILL.md)
+
+---
+
+## 修正依頼（差分のみ）
+
+HTML サンプル・`DESIGN.md`・実装コードへの **追記・差し替え依頼** では、指摘された箇所以外は変更しない。正本: [revision_scope](../../../.cursor/rules/revision_scope.mdc)。
+
+利用者が書く必要はない（ルールで常時適用）。明示したいときは次の 1 行で足りる。
+
+```text
+vN をベースに、次の N 点だけ変更。それ以外は触らない。
+```
+
+| 依頼に含めるとよい | 例 |
+|---|---|
+| 変更点 | ロゴ右寄せ／セクション見出し削除 |
+| 維持 | 文言・配色・開催期間・As-Is/To-Be |
+| 対象ファイル | `samples/security-poster-screen-lock.html` のみ |
+
+エージェントは完了時に **変更した箇所の一覧** を返す。
 
 ---
 

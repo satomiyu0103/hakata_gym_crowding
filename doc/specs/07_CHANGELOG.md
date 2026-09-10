@@ -11,6 +11,7 @@
 ## [Unreleased]
 
 ### Added
+- `docs` 定期実行停止調査 — スリープ＋初回 9:00 トリガー逃しで当日 26 回見逃しになる事象を [試験実装のエラー.md](doc/ai/guidelines/試験実装のエラー.md)・[windows-scheduled-sync.md](doc/reference/setup/windows-scheduled-sync.md)・[sessions/2026-09-10_scheduler-sleep-missed-runs.md](doc/ai/sessions/2026-09-10_scheduler-sleep-missed-runs.md) に記録
 - `FR-SCHED-001` 手動実行 — `scripts/run_hakata_crowding.bat`（正本）とデスクトップ `RPA` ショートカット作成用 `create_desktop_shortcuts.ps1`
 - `FR-FETCH-002` 天気取得 — トレーニング室ページ HTML から天気・最高/最低気温・風速・風向・降水確率を取得
 - `FR-STORE-002` 列スキーマ拡張 — 混雑履歴を日本語16列に変更（取得時間＋計測時間）、旧6列移行スクリプト

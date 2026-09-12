@@ -26,6 +26,7 @@
 - `docs` Phase 2.0 残タスク — `08_検証設計.md` 実データ化、`src/README.md` 拡充、全 `src/` にジュニア向けブロックコメント
 
 ### Fixed
+- `FR-SCHED-001` GitHub Actions schedule — `timezone` を外し UTC 換算 cron（`0,30 0-12`）へ変更。schedule 未発火の対策
 - `FR-STORE-002` 列移行 — 旧行の日時・人数・ステータス不正時に行単位でスキップし移行全体を継続
 - `FR-SCHED-001` ScheduleGuard — 振替火曜を yesterday 基準に変更、`_third_monday` に月境界ガード
 - `FR-FETCH-001` PCounterFetcher — naive datetime を Asia/Tokyo として stale 判定

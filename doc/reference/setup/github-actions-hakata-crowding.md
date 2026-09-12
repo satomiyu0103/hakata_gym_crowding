@@ -12,13 +12,20 @@ PC を起動したままにする必要はありません。
 
 ## 何が動くか
 
-| workflow | ファイル | いつ |
-|---|---|---|
-| 混雑取得 | `.github/workflows/hakata_gym_crowding.yml` | 毎日 9:00–21:30 JST、30 分間隔 |
-| keepalive | `.github/workflows/keepalive.yml` | 毎月 1 日 09:00 JST |
+| workflow | ファイル | いつ（日本時間） | cron（UTC） |
+|---|---|---|---|
+| 混雑取得 | `.github/workflows/hakata_gym_crowding.yml` | 毎日 9:00–21:30、30 分間隔 | `0,30 0-12 * * *` |
+| keepalive | `.github/workflows/keepalive.yml` | 毎月 1 日 09:00 | `0 0 1 * *` |
 
 22:00 ちょうどはプログラム側（`ScheduleGuard`）が取得対象外です。
 休館日も同じ判定でスキップします。
+
+**cron**：分・時・日・月・曜日の 5 つで起動時刻を書く式です。
+GitHub の schedule は **UTC**（世界の基準時。日本時間より 9 時間遅れ）で解釈します。
+日本時間の開館帯は UTC に換算して書きます。
+`timezone:` キーは付けません（2026-09-12 に `Asia/Tokyo` 付きでは schedule が 0 件だったため）。
+
+日本には夏時間がないので、UTC+9 の換算は通年で同じです。
 
 **GitHub Actions**：GitHub が用意するクラウド上の実行環境です。PC の代わりに Python を動かします。
 
@@ -98,10 +105,39 @@ Get-ScheduledTask -TaskName "HakataGymCrowding" | Select-Object TaskName, State
 
 ---
 
-## 5. 定期実行を 1 日観察する
+## 5. 定期実行を確認する（schedule）
 
-翌日以降、Actions の crowding が 9:00 前後に始まり、21:30 前後で終わることを確認します。
+**schedule**：GitHub が決まった時刻にワークフローを自動で起こす仕組みです。
+Actions 画面の「Run workflow」による手動実行（**workflow_dispatch**）とは別です。
+手動が成功しても、schedule が動いていることにはなりません。
+
+### マージ直後（次の UTC 0 分または 30 分）
+
+default ブランチへマージしたあと、次の UTC 0 分または 30 分を待ちます。
+開館帯なら、それは日本時間の 9:00–21:30 の枠に対応します。
 GitHub 側の開始は数分遅れることがあります。混雑取得では問題にしません。
+
+確認手順:
+
+1. GitHub の **Actions** タブを開く
+2. 左の **Hakata Gym Crowding** を選ぶ
+3. 一覧の Event 列が `schedule` の run があることを確認する（`workflow_dispatch` だけなら未発火）
+4. 緑（成功）なら、スプレッドシート「混雑履歴」に行が増えたことも確認する
+5. 実験用 workflow「Hakata Gym Crowding UTC Experiment」が一覧から消えていることを確認する
+
+API で件数を見る場合:
+
+```powershell
+gh api "repos/satomiyu0103/hakata_gym_crowding/actions/runs?event=schedule&per_page=5"
+gh run list --workflow=hakata_gym_crowding.yml --limit 10
+```
+
+`event=schedule` が 1 件以上あれば初回成功です。
+30 分以上待っても 0 件なら、workflow の Disable のあと Enable、keepalive の手動実行を試します。
+
+### 1 日観察
+
+翌日以降、Actions の crowding が 9:00 前後（日本時間）に始まり、21:30 前後で終わることを確認します。
 
 ---
 

@@ -47,3 +47,6 @@ uv run pytest
 | Agent ルーティング | [AGENTS.md](AGENTS.md) |
 | 要件・設計 | [doc/specs/](doc/specs/) |
 | テンプレセットアップ | [TEMPLATE_SETUP.md](TEMPLATE_SETUP.md) |
+
+## テスト
+push

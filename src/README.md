@@ -10,7 +10,7 @@ p-counter 公開 JSON とトレーニング室ページ HTML から混雑・天�
 
 | ファイル | 役割 |
 |---|---|
-| `hakata_gym_crowding/cli.py` | CLI エントリ（Task Scheduler から実行） |
+| `hakata_gym_crowding/cli.py` | CLI エントリ（GitHub Actions / 手動実行） |
 | `scripts/migrate_sheet_columns.py` | 旧 6 列シート → 新 16 列への一度きり移行 |
 
 ## モジュール構成

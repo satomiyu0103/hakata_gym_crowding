@@ -75,6 +75,7 @@ Slack に `[ERROR] 博多混雑RPA — 設定` が届くことを確認する。
 
 ## 関連
 
-- Task Scheduler: [windows-scheduled-sync.md](windows-scheduled-sync.md)
+- 定期実行（正本）: [github-actions-hakata-crowding.md](github-actions-hakata-crowding.md)
+- Task Scheduler（レガシー）: [windows-scheduled-sync.md](windows-scheduled-sync.md)
 - 設計: [doc/specs/03_システム設計.md](../../specs/03_システム設計.md)
 - FR: `FR-LOG-002`（[04_機能一覧.md](../../specs/04_機能一覧.md)）

@@ -1,8 +1,8 @@
 # Windows タスクスケジューラ設定（博多体育館混雑 RPA）
 
-最終更新: 2026-09-10
+最終更新: 2026-09-12
 
-> **クラウド移行検討中**: PC 常時起動を避ける場合は [cloud-scheduling-comparison.md](cloud-scheduling-comparison.md)（手法比較）と [cloud-github-actions-migration.md](../../specs/plans/cloud-github-actions-migration.md)（実装計画）を参照。移行完了後は本 doc はロールバック用として残す。
+> **レガシー（ロールバック用）**: 定期実行の正本は [github-actions-hakata-crowding.md](github-actions-hakata-crowding.md)（GitHub Actions）です。PC 運用に戻すときだけ本手順を使います。
 
 30 分間隔で 9:00〜22:00 の開館時間帯に混雑データを取得する手順です。休館判定は CLI 側（`ScheduleGuard`）が行うため、スケジューラは **時間帯内で定期起動** すれば足ります。
 

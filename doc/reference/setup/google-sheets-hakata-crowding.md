@@ -141,5 +141,6 @@ uv run python scripts/migrate_sheet_columns.py
 
 ## 関連
 
-- 定期実行: [windows-scheduled-sync.md](windows-scheduled-sync.md)
+- 定期実行（正本）: [github-actions-hakata-crowding.md](github-actions-hakata-crowding.md)
+- 定期実行（レガシー）: [windows-scheduled-sync.md](windows-scheduled-sync.md)
 - 要件: [doc/specs/02_要件定義.md](../../specs/02_要件定義.md)

@@ -1,6 +1,6 @@
 # ROADMAP
 
-最終更新: {{LAST_UPDATED}}
+最終更新: 2026-09-12
 
 フェーズ別の実装計画。短期の変更は [07_CHANGELOG.md](07_CHANGELOG.md) の `[Unreleased]` を参照。
 
@@ -11,6 +11,7 @@
 ## 現在地
 
 - Phase 2.0 完了（16列スキーマ・天気取得・移行スクリプト・コメント整備・検証設計）
+- Phase 1-6 GitHub Actions 定期実行を追加（切替は Secrets 登録後）
 - 次: 蓄積データの分析・可視化（Phase 2.1）
 
 ---
@@ -23,7 +24,8 @@
 | 1-2 | Google Sheets 追記 | FR-STORE-001 | 完了 |
 | 1-3 | 開館・休館判定 | FR-SCHED-001 | 完了 |
 | 1-4 | 実行ログ | FR-LOG-001 | 完了 |
-| 1-5 | Task Scheduler 手順 | FR-SCHED-001 | 完了 |
+| 1-5 | Task Scheduler 手順 | FR-SCHED-001 | 完了（レガシー） |
+| 1-6 | GitHub Actions 定期実行 + keepalive | FR-SCHED-001 | 完了 |
 
 ---
 

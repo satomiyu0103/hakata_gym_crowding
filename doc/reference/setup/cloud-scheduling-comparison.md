@@ -2,7 +2,7 @@
 
 最終更新: 2026-09-07
 
-博多体育館混雑 RPA（`hakata_gym_crowding`）を **個人 PC 常時起動** から解放するための選択肢比較です。実装手順は [cloud-github-actions-migration.md](../../specs/plans/cloud-github-actions-migration.md) を参照してください。
+博多体育館混雑 RPA（`hakata_gym_crowding`）を **個人 PC 常時起動** から解放するための選択肢比較です。実装手順は [cloud-github-actions-migration.md](../../specs/plans/cloud-github-actions-migration.md) と [github-actions-hakata-crowding.md](github-actions-hakata-crowding.md) を参照してください。
 
 ---
 
@@ -238,6 +238,7 @@ Selenium 系クラウド化が近い場合。
 | ドキュメント | 内容 |
 |---|---|
 | [cloud-github-actions-migration.md](../../specs/plans/cloud-github-actions-migration.md) | 実装計画（GitHub Actions 移行） |
-| [windows-scheduled-sync.md](windows-scheduled-sync.md) | 現行 PC 運用 |
+| [github-actions-hakata-crowding.md](github-actions-hakata-crowding.md) | 定期実行の正本 |
+| [windows-scheduled-sync.md](windows-scheduled-sync.md) | レガシー（PC 運用） |
 | [google-sheets-hakata-crowding.md](google-sheets-hakata-crowding.md) | Sheets セットアップ |
 | [slack-webhook-hakata-crowding.md](slack-webhook-hakata-crowding.md) | Slack 通知 |

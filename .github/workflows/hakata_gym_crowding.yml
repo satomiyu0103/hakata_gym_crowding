@@ -1,12 +1,13 @@
 # 博多体育館トレーニング室の混雑取得（FR-SCHED-001）
-# 9:00–21:30 JST・30分間隔。22:00 ちょうどは ScheduleGuard が skip するため cron に含めない。
+# 開館帯は 9:00–21:30 JST（UTC+9）。cron は UTC で書く（timezone キーは使わない）。
+# JST 9:00–21:30 / 30分 = UTC 0:00–12:30 の 0分と 30分。
+# 22:00 ちょうどは ScheduleGuard が skip するため cron に含めない。
 name: Hakata Gym Crowding
 
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "0,30 9-21 * * *"
-      timezone: "Asia/Tokyo"
+    - cron: "0,30 0-12 * * *"
 
 permissions:
   contents: read

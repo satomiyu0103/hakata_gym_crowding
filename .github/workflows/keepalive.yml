@@ -1,12 +1,12 @@
 # 公開リポジトリの schedule が 60 日無活動で停止するのを先回りで解除する。
-# GitHub cron に「ちょうど 30 日」が無いため、毎月 1 日 09:00 JST とする。ダミー commit はしない。
+# GitHub cron に「ちょうど 30 日」が無いため、毎月 1 日 09:00 JST（UTC 0:00）とする。
+# cron は UTC で書く（timezone キーは使わない）。ダミー commit はしない。
 name: Keepalive scheduled workflows
 
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "0 9 1 * *"
-      timezone: "Asia/Tokyo"
+    - cron: "0 0 1 * *"
 
 permissions:
   actions: write

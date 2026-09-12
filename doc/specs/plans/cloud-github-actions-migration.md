@@ -37,12 +37,12 @@
 ### クラウド移行後
 
 ```
-[GitHub Actions crowding  0,30 9-21 * * * Asia/Tokyo]
+[GitHub Actions crowding  0,30 0-12 * * * UTC（= 9:00–21:30 JST）]
     → uv sync --frozen + uv run python -m hakata_gym_crowding.cli
         → Secrets から .env 相当を注入
         → （同上。ScheduleGuard は変更なし）
 
-[GitHub Actions keepalive  0 9 1 * * Asia/Tokyo]
+[GitHub Actions keepalive  0 0 1 * * UTC（= 毎月1日 09:00 JST）]
     → gh workflow enable（crowding と keepalive）
 ```
 
@@ -107,15 +107,16 @@ ERROR 多発時のみ前倒しする。
 
 ### crowding
 
-- `cron: "0,30 9-21 * * *"` + `timezone: "Asia/Tokyo"`
-- 起動時刻: 9:00, 9:30, …, 21:30 JST（1 日 26 回）
+- `cron: "0,30 0-12 * * *"`（UTC。`timezone` キーは付けない）
+- 起動時刻: 9:00, 9:30, …, 21:30 JST（1 日 26 回）。日本時間 = UTC+9（夏時間なし）
 - 休館判定は **cron では行わない**（`ScheduleGuard` に委譲）
 
-旧案の `*/30 * * * *`（UTC 24 時間）は採用しない。時間外起動を減らすため cron 側で開館帯に絞る。
+`timezone: "Asia/Tokyo"` は 2026-09-12 時点で schedule が 0 件だったため採用しない。
+旧案の `*/30 * * * *`（UTC 24 時間）も採用しない。時間外起動を減らすため cron 側で開館帯に絞る。
 
 ### keepalive
 
-- `cron: "0 9 1 * *"` + `timezone: "Asia/Tokyo"`（毎月 1 日 09:00 JST）
+- `cron: "0 0 1 * *"`（UTC = 毎月 1 日 09:00 JST。`timezone` キーは付けない）
 - GitHub cron に「ちょうど 30 日」が無いため、月次 1 日を約 30 日周期とする
 - `gh workflow enable` で crowding と keepalive を再有効化
 - ダミー commit はしない
@@ -125,6 +126,7 @@ ERROR 多発時のみ前倒しする。
 - 開始時刻に数分の遅延があり得る（混雑用途では ±10 分を許容）
 - 公開 repo は 60 日無活動で schedule が停止する（keepalive で先回り解除）
 - schedule の自動実行そのものは「リポジトリ活動」にカウントされない
+- `timezone:` キーは使わない。cron は UTC 換算で書く（2026-09-12 の schedule 0 件を踏まえる）
 
 ---
 

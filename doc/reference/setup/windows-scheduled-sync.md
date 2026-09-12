@@ -1,8 +1,24 @@
 # Windows タスクスケジューラ設定（博多体育館混雑 RPA）
 
-最終更新: 2026-09-05
+最終更新: 2026-09-12
+
+> **レガシー（ロールバック用）**: 定期実行の正本は [github-actions-hakata-crowding.md](github-actions-hakata-crowding.md)（GitHub Actions）です。PC 運用に戻すときだけ本手順を使います。
 
 30 分間隔で 9:00〜22:00 の開館時間帯に混雑データを取得する手順です。休館判定は CLI 側（`ScheduleGuard`）が行うため、スケジューラは **時間帯内で定期起動** すれば足ります。
+
+---
+
+## 定期実行の前提（重要）
+
+**毎日 9:00 の初回トリガー時点で、PC が起動しており、かつユーザーがログオンしている必要がある**（タスクが「ログオン時のみ」の場合）。
+
+| 条件 | 初回 9:00 を逃したとき |
+|---|---|
+| PC スリープ中 | 当日の 30 分繰り返し（計 26 回）が **まとめて見逃し** になり、ログオン後も自動再開しないことがある |
+| ログオン前 | Interactive タスクは実行されない |
+| 手動実行のみ成功 | RPA 本体は正常。スケジューラ側の取りこぼしを疑う |
+
+`StartWhenAvailable`（起動後に実行）と `WakeToRun`（スリープ解除）は ON でも、**初回を逃した日の残り 25 回を自動補完しない**。
 
 ---
 
@@ -84,6 +100,15 @@ Register-ScheduledTask `
 `skipped_closed` は休館・時間外で正常スキップです。
 
 ERROR 時の Slack 通知設定: [slack-webhook-hakata-crowding.md](slack-webhook-hakata-crowding.md)
+
+### 定期実行が止まったとき（トラブルシュート）
+
+1. **タスクの見逃し数** — `Get-ScheduledTaskInfo -TaskName HakataGymCrowding` で `NumberOfMissedRuns` を確認。20 前後なら当日の初回トリガー逃し
+2. **run.log の時刻** — 当日エントリが `:34` など **:00/:30 以外** だけ → 手動 BAT 実行の可能性大
+3. **スリープ履歴** — 当日 9:00 前にスリープしていたか（イベントログの復帰時刻）
+4. **RPA 単体** — `Start-ScheduledTask -TaskName HakataGymCrowding` または `--dry-run --force` で成功するか
+
+対処案の詳細・ログオン時救済タスクの登録例: [試験実装のエラー.md](../../ai/guidelines/試験実装のエラー.md)（2026-09-10 項）
 
 ---
 

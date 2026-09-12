@@ -1,0 +1,55 @@
+# 博多体育館トレーニング室の混雑取得（FR-SCHED-001）
+# 9:00–21:30 JST・30分間隔。22:00 ちょうどは ScheduleGuard が skip するため cron に含めない。
+name: Hakata Gym Crowding
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0,30 9-21 * * *"
+      timezone: "Asia/Tokyo"
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Configure secrets
+        env:
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          mkdir -p config logs
+          umask 077
+          printf '%s' "$GOOGLE_SHEETS_CREDENTIALS" > config/service-account.json
+          {
+            echo "SPREADSHEET_ID=${SPREADSHEET_ID}"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=config/service-account.json"
+            echo "TIMEZONE=Asia/Tokyo"
+            echo "SHEET_NAME=混雑履歴"
+            echo "SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}"
+            echo "SLACK_NOTIFY_ENABLED=true"
+          } > config/.env
+
+      - name: Run crowding fetch
+        run: uv run python -m hakata_gym_crowding.cli
+
+      - name: Upload run log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-log
+          path: logs/run.log
+          if-no-files-found: ignore

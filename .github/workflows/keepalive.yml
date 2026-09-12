@@ -1,0 +1,25 @@
+# 公開リポジトリの schedule が 60 日無活動で停止するのを先回りで解除する。
+# GitHub cron に「ちょうど 30 日」が無いため、毎月 1 日 09:00 JST とする。ダミー commit はしない。
+name: Keepalive scheduled workflows
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 9 1 * *"
+      timezone: "Asia/Tokyo"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  enable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Re-enable crowding and keepalive workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow enable hakata_gym_crowding.yml --repo "${GITHUB_REPOSITORY}"
+          gh workflow enable keepalive.yml --repo "${GITHUB_REPOSITORY}"
